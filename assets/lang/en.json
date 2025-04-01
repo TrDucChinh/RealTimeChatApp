@@ -1,6 +1,23 @@
 {
     "title": "Multi Language & Theme",
     "change_theme": "Change Theme",
-    "change_language": "Change Language"
+    "change_language": "Change Language",
+
+    "e_chat": "E-Chat",
+    "add_friend": "Add Friend",
+    "create_group": "Create Group",
+    "chats": "Chats",
+    "groups": "Groups",
+    "menu": "Menu",
+    "profile": "Profile",
+    "leave_group": "Leave Group",
+    "report": "Report",
+    "language": "Language",
+    "dark_mode": "Dark Mode",
+    "mute_notifications": "Mute Notifications",
+    "edit_profile": "Edit Profile",
+    "save": "Save",
+    "cancel": "Cancel",
+    "search": "Search"
   }
   

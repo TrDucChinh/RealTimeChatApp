@@ -4,7 +4,6 @@ import '../config/localization/app_localizations.dart';
 import '../cubits/theme_cubit.dart';
 import '../cubits/locale_cubit.dart';
 
-
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -20,7 +19,8 @@ class HomeScreen extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () => context.read<ThemeCubit>().toggleTheme(),
-              child: Text(AppLocalizations.of(context).translate('change_theme')),
+              child:
+                  Text(AppLocalizations.of(context).translate('change_theme')),
             ),
             ElevatedButton(
               onPressed: () => context.read<LocaleCubit>().changeLocale('vi'),

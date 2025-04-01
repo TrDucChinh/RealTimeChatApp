@@ -1,78 +1,85 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class TextStyles {
-  static const String fontFamily = 'Poppins';
-  static const TextStyle semiBold_40px = TextStyle(
+  static String fontFamily = 'Poppins';
+  static TextStyle semiBold_40px = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 40,
+    fontSize: 40.sp,
     fontWeight: FontWeight.w600,
   );
 
-  static const TextStyle bold_30px_5Spacing = TextStyle(
+  static TextStyle bold_30px_5Spacing = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 30,
+    fontSize: 30.sp,
     fontWeight: FontWeight.w700,
     letterSpacing: 1.5,
   );
 
-  static const TextStyle semiBold_22px_5Spacing = TextStyle(
+  static TextStyle semiBold_22px_5Spacing = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 22,
+    fontSize: 22.sp,
     fontWeight: FontWeight.w600,
     letterSpacing: 1.1,
   );
 
-  static const TextStyle semiBold_22px = TextStyle(
+  static TextStyle semiBold_22px = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 22,
+    fontSize: 22.sp,
     fontWeight: FontWeight.w600,
   );
 
-  static const TextStyle regular_22px = TextStyle(
+  static TextStyle regular_22px = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 22,
+    fontSize: 22.sp,
     fontWeight: FontWeight.w400,
   );
 
-  static const TextStyle semiBold_18px = TextStyle(
+  static TextStyle semiBold_18px = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 18,
+    fontSize: 18.sp,
     fontWeight: FontWeight.w600,
   );
 
-  static const TextStyle regular_18px = TextStyle(
+  static TextStyle regular_18px = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 18,
+    fontSize: 18.sp,
     fontWeight: FontWeight.w400,
   );
 
-  static const TextStyle semiBold_16px = TextStyle(
+  static TextStyle semiBold_16px = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 16,
+    fontSize: 16.sp,
     fontWeight: FontWeight.w600,
   );
 
-  static const TextStyle regular_16px = TextStyle(
+  static TextStyle regular_16px = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 16,
+    fontSize: 16.sp,
     fontWeight: FontWeight.w400,
   );
 
-  static const TextStyle light_16px = TextStyle(
+  static TextStyle light_16px = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 16,
+    fontSize: 16.sp,
     fontWeight: FontWeight.w300,
   );
 
-  static const TextStyle medium_16px = TextStyle(
+  static TextStyle medium_16px = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 16,
+    fontSize: 16.sp,
     fontWeight: FontWeight.w500,
   );
 
-  static const TextStyle regular_12px = TextStyle(
+  static TextStyle regular_12px = TextStyle(
     fontFamily: fontFamily,
-    fontSize: 12,
+    fontSize: 12.sp,
     fontWeight: FontWeight.w400,
   );
+  static TextStyle medium_18px = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 18.sp,
+    fontWeight: FontWeight.w500,
+  );
+
 }

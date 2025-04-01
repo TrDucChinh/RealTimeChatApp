@@ -3,4 +3,5 @@ class AppImages {
   static const String format = '.png';
 
   static const String logo = '${basePath}logo$format';
-}
+  static const String logoText = '${basePath}logo_text$format';
+} 

@@ -1,6 +1,23 @@
 {
     "title": "Đa Ngôn Ngữ & Giao Diện",
     "change_theme": "Đổi Giao Diện",
-    "change_language": "Đổi Ngôn Ngữ"
+    "change_language": "Đổi Ngôn Ngữ",
+
+    "e_chat": "E-Chat",
+    "add_friend": "Thêm Bạn Bè",
+    "create_group": "Tạo Nhóm",
+    "chats": "Đoạn Chat",
+    "groups": "Nhóm",
+    "menu": "Menu",
+    "profile": "Hồ Sơ",
+    "leave_group": "Rời Nhóm",
+    "report": "Báo Cáo",
+    "language": "Ngôn Ngữ",
+    "dark_mode": "Chế Độ Tối",
+    "mute_notifications": "Tắt Thông Báo",
+    "edit_profile": "Chỉnh Sửa Hồ Sơ",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "search": "Tìm Kiếm"
   }
   
