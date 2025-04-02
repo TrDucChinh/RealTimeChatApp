@@ -82,4 +82,15 @@ class TextStyles {
     fontWeight: FontWeight.w500,
   );
 
+  static TextStyle bold_16px = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 16.sp,
+    fontWeight: FontWeight.w700,
+  );
+
+  static TextStyle bold_12px = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 12.sp,
+    fontWeight: FontWeight.w700,
+  );
 }
