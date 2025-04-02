@@ -9,4 +9,7 @@ class AppIcons {
   static const String add = '${basePath}add_icon$format';
   static const String search = '${basePath}search_icon$format';
   static const String user = '${basePath}user_icon$format';
+  static const String profile = '${basePath}profile_icon$format';
+  static const String profileFilled = '${basePath}profile_filled_icon$format';
+  static const String menu = '${basePath}menu_icon$format';
 }

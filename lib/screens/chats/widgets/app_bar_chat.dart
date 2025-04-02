@@ -41,10 +41,10 @@ class _ChatAppBarState extends State<ChatAppBar> {
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
                 colors: [
-                  AppColors.white.withAlpha(0),
-                  AppColors.white.withAlpha(20),
+                  AppColors.white.withOpacity(0),
+                  AppColors.white.withOpacity(0.2),
                 ],
-                stops: const [0.00, 1.00],
+                stops: const [0.81, 1.00],
               ),
               borderRadius: BorderRadius.only(
                 bottomRight: Radius.circular(50.r),
@@ -154,7 +154,7 @@ class _ChatAppBarState extends State<ChatAppBar> {
                         padding: EdgeInsets.all(8.r),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: AppColors.white.withAlpha(20),
+                          color: AppColors.white.withOpacity(0.2),
                         ),
                         child: Icon(
                           Icons.close,

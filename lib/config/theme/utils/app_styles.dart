@@ -1,7 +1,7 @@
 class AppStyles {
   //Radius
   static const radius_6px = 6.0;
-  static const radius_12px = 8.0;
+  static const radius_12px = 12.0;
   static const radius_16px = 18.0;
 
   // Spacing

@@ -76,7 +76,21 @@ class AppColors {
   //Other
   static const white = Color(0xFFffffff);
   static const black = Color(0xFF292929);
-  static const gradientBlue = Color(0xFFbabac9);
-  static const gradientLightBlue = Color(0xFFbabac9);
-
+  static const gradientBlue = LinearGradient(
+    colors: [
+      Color(0xFF1565C0),
+      Color(0xFF0F4888),
+    ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  
+  static const gradientLightBlue = LinearGradient(
+    colors: [
+      Color(0xFF40C4FF),
+      Color(0xFF03A9F4),
+    ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 }
