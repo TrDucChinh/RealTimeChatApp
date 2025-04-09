@@ -6,6 +6,7 @@ import 'package:chat_app_ttcs/config/theme/utils/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 
 class ChatAppBar extends StatefulWidget implements PreferredSizeWidget {
   const ChatAppBar({super.key});
@@ -61,13 +62,13 @@ class _ChatAppBarState extends State<ChatAppBar> {
                   ),
                   child: TextField(
                     controller: _searchController,
-                    style: TextStyles.regular_16px.copyWith(
+                    style: AppTextStyles.regular_16px.copyWith(
                       color: AppColors.neutral_900,
                     ),
                     textAlignVertical: TextAlignVertical.center,
                     decoration: InputDecoration(
                       hintText: AppLocalizations.of(context).translate('search'),
-                      hintStyle: TextStyles.regular_16px.copyWith(
+                      hintStyle: AppTextStyles.regular_16px.copyWith(
                         color: AppColors.neutral_900,
                       ),
                       
@@ -90,7 +91,7 @@ class _ChatAppBarState extends State<ChatAppBar> {
                     SizedBox(width: 10.w),
                     Text(
                       AppLocalizations.of(context).translate('e_chat'),
-                      style: TextStyles.semiBold_22px.copyWith(
+                      style: AppTextStyles.semiBold_22px.copyWith(
                         color: AppColors.white,
                         fontStyle: FontStyle.italic,
                       ),
@@ -132,7 +133,7 @@ class _ChatAppBarState extends State<ChatAppBar> {
                   ],
                   onSelected: (String value) {
                     if (value == 'add_friend') {
-                      // Navigate to add friend screen
+                      context.pushNamed('addFriend');
                     } else if (value == 'create_group') {
                       // Navigate to create group screen
                     }
@@ -196,7 +197,7 @@ class _ChatAppBarState extends State<ChatAppBar> {
         SizedBox(width: 12.w),
         Text(
           title,
-          style: TextStyles.medium_18px.copyWith(
+          style: AppTextStyles.medium_18px.copyWith(
             color: AppColors.neutral_900,
           ),
         ),

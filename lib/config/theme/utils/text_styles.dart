@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class TextStyles {
+class AppTextStyles {
   static String fontFamily = 'Poppins';
   static TextStyle semiBold_40px = TextStyle(
     fontFamily: fontFamily,

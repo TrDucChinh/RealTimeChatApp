@@ -1,7 +1,9 @@
 import 'package:chat_app_ttcs/screens/chats/pages/chat_screen.dart';
+import 'package:chat_app_ttcs/screens/friends/pages/add_friend_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../common/widgets/custom_bottom_navbar.dart';
+import '../../sample_token.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -10,22 +12,22 @@ class AppRouter {
       ShellRoute(
         builder: (context, state, child) {
           // Check if the current route should show bottom navigation
-          final shouldShowBottomNav = state.matchedLocation.startsWith('/chats') ||
-              state.matchedLocation.startsWith('/groups') ||
-              state.matchedLocation.startsWith('/profile') ||
-              state.matchedLocation.startsWith('/menu');
+          final shouldShowBottomNav =
+              state.matchedLocation.startsWith('/chats') ||
+                  state.matchedLocation.startsWith('/groups') ||
+                  state.matchedLocation.startsWith('/profile') ||
+                  state.matchedLocation.startsWith('/menu');
           return Scaffold(
             body: child,
-            bottomNavigationBar: shouldShowBottomNav 
-                ? const CustomBottomNavBar() 
-                : null,
+            bottomNavigationBar:
+                shouldShowBottomNav ? const CustomBottomNavBar() : null,
           );
         },
         routes: [
           GoRoute(
             path: '/chats',
             name: 'chats',
-            builder: (context, state) => const ChatsScreen(),
+            builder: (context, state) => ChatsScreen(token: token,),
           ),
           GoRoute(
             path: '/groups',
@@ -56,7 +58,15 @@ class AppRouter {
           ),
         ],
       ),
-      
+
+      GoRoute(
+        path: '/add-friend',
+        name: 'addFriend',
+        builder: (context, state) {
+          return const AddFriendScreen();
+        },
+      ),
+
       // GoRoute(
       //   path: '/chat/:id',
       //   name: 'chatDetail',
@@ -74,4 +84,4 @@ class AppRouter {
       // ),
     ],
   );
-} 
+}

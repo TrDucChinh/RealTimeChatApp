@@ -12,4 +12,6 @@ class AppIcons {
   static const String profile = '${basePath}profile_icon$format';
   static const String profileFilled = '${basePath}profile_filled_icon$format';
   static const String menu = '${basePath}menu_icon$format';
+  static const String arrowBack = '${basePath}arrow_left_icon$format';
+  static const String addUser = '${basePath}add_user_icon$format';
 }
