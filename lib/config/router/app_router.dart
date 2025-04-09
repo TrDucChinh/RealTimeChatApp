@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../common/widgets/custom_bottom_navbar.dart';
 import '../../sample_token.dart';
+import '../../screens/chats_conversation/pages/chat_conversation_screen.dart';
+import '../../models/conversation_model.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -27,7 +29,9 @@ class AppRouter {
           GoRoute(
             path: '/chats',
             name: 'chats',
-            builder: (context, state) => ChatsScreen(token: token,),
+            builder: (context, state) => ChatsScreen(
+              token: token,
+            ),
           ),
           GoRoute(
             path: '/groups',
@@ -64,6 +68,19 @@ class AppRouter {
         name: 'addFriend',
         builder: (context, state) {
           return const AddFriendScreen();
+        },
+      ),
+
+      GoRoute(
+        path: '/chatConversation/:id',
+        name: 'chatConversation',
+        builder: (BuildContext context, GoRouterState state) {
+          final String chatId = state.pathParameters['id'] ?? '';
+          final conversation = state.extra as ConversationModel;
+          return ChatConversationScreen(
+            conversationId: chatId,
+            conversation: conversation,
+          );
         },
       ),
 

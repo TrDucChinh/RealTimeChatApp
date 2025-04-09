@@ -1,4 +1,5 @@
 import 'package:chat_app_ttcs/models/conversation_model.dart';
+import 'package:chat_app_ttcs/sample_token.dart';
 import 'package:chat_app_ttcs/services/network_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:convert';
@@ -11,7 +12,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   ChatBloc({required String token})
       : _networkService = NetworkService(
-          baseUrl: 'http://10.0.2.2:3000',
+          // baseUrl: 'http://10.0.2.2:3000', // emulator IP address
+          baseUrl: baseUrl2, // Localhost for real device
           token: token,
         ),
         super(ChatInitial()) {

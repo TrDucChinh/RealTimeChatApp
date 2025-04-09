@@ -74,7 +74,7 @@ class ConversationItem extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 10.h),
-              unreadCount as int == 0
+              unreadCount.isEmpty
                   ? SizedBox(height: 18.h)
                   : ConstrainedBox(
                       constraints: BoxConstraints(minWidth: 20.w),
@@ -82,7 +82,7 @@ class ConversationItem extends StatelessWidget {
                         padding: EdgeInsets.symmetric(horizontal: 6.w),
                         height: 18.h,
                         decoration: BoxDecoration(
-                          color: AppColors.lightBlue_500,
+                          color: AppColors.lightBlue_500, 
                           borderRadius: BorderRadius.circular(4.r),
                         ),
                         child: Center(
@@ -107,12 +107,15 @@ class ConversationItem extends StatelessWidget {
     final now = DateTime.now();
     final diff = now.difference(time);
 
-    if (diff.inDays == 0) {
+    if (diff.inDays == 0 && now.day == time.day) {
       return DateFormat.Hm().format(time); // e.g. 10:25
-    } else if (diff.inDays == 1) {
+    } else if (diff.inDays == 1 ||
+        (now.day - time.day == 1 &&
+            now.month == time.month &&
+            now.year == time.year)) {
       return 'Yesterday';
     } else {
-      return DateFormat('dd/MM').format(time); // e.g. 09/04
+      return '${DateFormat.Hm().format(time)}  ${DateFormat('dd/MM').format(time)}';
     }
   }
 }

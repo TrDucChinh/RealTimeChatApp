@@ -133,7 +133,9 @@ class _ChatAppBarState extends State<ChatAppBar> {
                   ],
                   onSelected: (String value) {
                     if (value == 'add_friend') {
+
                       context.pushNamed('addFriend');
+                      
                     } else if (value == 'create_group') {
                       // Navigate to create group screen
                     }

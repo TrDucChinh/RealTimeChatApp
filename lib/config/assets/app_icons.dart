@@ -14,4 +14,7 @@ class AppIcons {
   static const String menu = '${basePath}menu_icon$format';
   static const String arrowBack = '${basePath}arrow_left_icon$format';
   static const String addUser = '${basePath}add_user_icon$format';
+  static const String dotMenu = '${basePath}dot_menu_icon$format';
+  static const String videoCam = '${basePath}video_cam_icon$format';
+  static const String phone = '${basePath}phone_icon$format';
 }

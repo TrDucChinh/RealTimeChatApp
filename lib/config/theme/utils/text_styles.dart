@@ -65,6 +65,11 @@ class AppTextStyles {
     fontWeight: FontWeight.w300,
   );
 
+  static TextStyle medium_12px = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 12.sp,
+    fontWeight: FontWeight.w500,
+  );
   static TextStyle medium_16px = TextStyle(
     fontFamily: fontFamily,
     fontSize: 16.sp,

@@ -25,7 +25,9 @@ class MessageModel {
     return MessageModel(
       id: json['_id'],
       conversationId: json['conversationId'],
-      senderId: json['senderId'],
+      senderId: json['senderId'] is String
+          ? json['senderId']
+          : json['senderId']['_id'],
       text: json['text'],
       messageType: json['messageType'],
       attachments: json['attachments'] ?? [],

@@ -61,7 +61,27 @@ class NetworkService {
       );
       return response;
     } catch (e) {
-      throw Exception('Network error: $e');
+      throw Exception('Lỗi kết nối: $e');
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchMessages(
+    String conversationId,
+  ) async {
+    try {
+      final response = await get('/message/$conversationId');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((e) => e as Map<String, dynamic>).toList();
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['message'] ?? 'Không thể tải tin nhắn');
+      }
+    } catch (e) {
+      if (e is FormatException) {
+        throw Exception('Dữ liệu không hợp lệ');
+      }
+      rethrow;
     }
   }
 }

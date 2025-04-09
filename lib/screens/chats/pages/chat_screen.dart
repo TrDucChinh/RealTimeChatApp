@@ -31,11 +31,11 @@ class ChatsScreen extends StatelessWidget {
             if (state is ChatLoading) {
               return const Center(child: CircularProgressIndicator());
             }
-            
+
             if (state is ChatError) {
               return Center(child: Text(state.message));
             }
-            
+
             if (state is ChatLoaded) {
               return ListView.separated(
                 padding: const EdgeInsets.only(top: 100),
@@ -45,17 +45,21 @@ class ChatsScreen extends StatelessWidget {
                   final conversation = state.conversations[index];
                   return GestureDetector(
                     onTap: () {
-                      context.push('/chat/${conversation.id}');
+                      context.pushNamed(
+                        'chatConversation',
+                        pathParameters: {'id': conversation.id},
+                        extra: conversation,
+                      );
                     },
                     child: ConversationItem(
                       conversation: conversation,
-                      currentUserId: '67f61de4128812c84510d101',
+                      currentUserId: '67f61de4128812c84510d102',
                     ),
                   );
                 },
               );
             }
-            
+
             return const SizedBox.shrink();
           },
         ),
