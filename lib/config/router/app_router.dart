@@ -7,7 +7,6 @@ import '../../common/widgets/custom_bottom_navbar.dart';
 import '../../sample_token.dart';
 import '../../screens/auth/pages/login_screen.dart';
 import '../../screens/chats_conversation/pages/chat_conversation_screen.dart';
-import '../../models/conversation_model.dart';
 import '../../screens/auth/bloc/auth_bloc.dart';
 import '../../services/network_service.dart';
 
@@ -50,13 +49,6 @@ class AppRouter {
               token: state.extra as String,
             ),
           ),
-          // GoRoute(
-          //   path: '/chats',
-          //   name: 'chats',
-          //   builder: (context, state) => ChatsScreen(
-          //     token: token,
-          //   ),
-          // ),
           GoRoute(
             path: '/groups',
             name: 'groups',
@@ -100,29 +92,14 @@ class AppRouter {
         name: 'chatConversation',
         builder: (BuildContext context, GoRouterState state) {
           final String chatId = state.pathParameters['id'] ?? '';
-          final conversation = state.extra as ConversationModel;
+          final params = state.extra as ChatConversationParams;
           return ChatConversationScreen(
             conversationId: chatId,
-            conversation: conversation,
+            conversation: params.conversation,
+            token: params.token,
           );
         },
       ),
-
-      // GoRoute(
-      //   path: '/chat/:id',
-      //   name: 'chatDetail',
-      //   builder: (context, state) {
-      //     final chatId = state.pathParameters['id'] ?? '';
-      //     return Scaffold(
-      //       appBar: AppBar(
-      //         title: Text('Chat $chatId'),
-      //       ),
-      //       body: Center(
-      //         child: Text('Chat Detail Screen - ID: $chatId'),
-      //       ),
-      //     );
-      //   },
-      // ),
     ],
   );
 }

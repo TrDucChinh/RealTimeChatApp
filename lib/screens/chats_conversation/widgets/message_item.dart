@@ -45,16 +45,55 @@ class MessageItem extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 4.h),
-              Text(
-                _formatTime(message.createdAt),
-                style: AppTextStyles.medium_12px.copyWith(
-                  color: isSender ? AppColors.white : AppColors.neutral_100,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _formatTime(message.createdAt),
+                    style: AppTextStyles.medium_12px.copyWith(
+                      color: isSender ? AppColors.white.withOpacity(0.7) : AppColors.neutral_500,
+                    ),
+                  ),
+                  if (isSender) ...[
+                    SizedBox(width: 4.w),
+                    _buildStatusIcon(),
+                  ],
+                ],
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildStatusIcon() {
+    final status = message.status['status'] as String?;
+    IconData icon;
+    Color color;
+
+    switch (status) {
+      case 'sending':
+        icon = Icons.access_time;
+        color = AppColors.white.withOpacity(0.7);
+        break;
+      case 'sent':
+        icon = Icons.check;
+        color = AppColors.white.withOpacity(0.7);
+        break;
+      case 'failed':
+        icon = Icons.error_outline;
+        color = AppColors.red_500;
+        break;
+      default:
+        icon = Icons.check;
+        color = AppColors.white.withOpacity(0.7);
+    }
+
+    return Icon(
+      icon,
+      size: 16.sp,
+      color: color,
     );
   }
 

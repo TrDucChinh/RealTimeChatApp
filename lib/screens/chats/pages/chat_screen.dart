@@ -2,6 +2,7 @@ import 'package:chat_app_ttcs/screens/chats/bloc/chat_bloc.dart';
 import 'package:chat_app_ttcs/screens/chats/bloc/chat_event.dart';
 import 'package:chat_app_ttcs/screens/chats/widgets/app_bar_chat.dart';
 import 'package:chat_app_ttcs/screens/chats/widgets/conversation_item.dart';
+import 'package:chat_app_ttcs/screens/chats_conversation/pages/chat_conversation_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -48,7 +49,10 @@ class ChatsScreen extends StatelessWidget {
                       context.pushNamed(
                         'chatConversation',
                         pathParameters: {'id': conversation.id},
-                        extra: conversation,
+                        extra: ChatConversationParams(
+                          conversation: conversation,
+                          token: token,
+                        ),
                       );
                     },
                     child: ConversationItem(

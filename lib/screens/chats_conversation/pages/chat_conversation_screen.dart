@@ -7,21 +7,32 @@ import 'package:flutter/scheduler.dart';
 
 import '../../../config/theme/utils/app_colors.dart';
 import '../../../models/conversation_model.dart';
-import '../../../sample_token.dart';
 import '../widgets/app_bar.dart';
 import '../bloc/chat_conversation_bloc.dart';
 import '../bloc/chat_conversation_event.dart';
 import '../bloc/chat_conversation_state.dart';
+
+class ChatConversationParams {
+  final ConversationModel conversation;
+  final String token;
+
+  ChatConversationParams({
+    required this.conversation,
+    required this.token,
+  });
+}
 
 class ChatConversationScreen extends StatelessWidget {
   const ChatConversationScreen({
     super.key,
     required this.conversationId,
     required this.conversation,
+    required this.token,
   });
 
   final String conversationId;
   final ConversationModel conversation;
+  final String token;
 
   @override
   Widget build(BuildContext context) {
