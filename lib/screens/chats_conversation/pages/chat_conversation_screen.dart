@@ -3,6 +3,7 @@ import 'package:chat_app_ttcs/screens/chats_conversation/widgets/title_conversio
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../../../config/theme/utils/app_colors.dart';
 import '../../../models/conversation_model.dart';
@@ -18,15 +19,12 @@ class ChatConversationScreen extends StatelessWidget {
     required this.conversationId,
     required this.conversation,
   });
+
   final String conversationId;
   final ConversationModel conversation;
 
   @override
   Widget build(BuildContext context) {
-    // print(conversation.participants[0].id);
-    conversation.participants.forEach((element) {
-      print('Check ID: ${element.id}');
-    });
     return BlocProvider(
       create: (context) => ChatConversationBloc(
         token: token,
@@ -62,32 +60,38 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
 
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
-      _scrollController.animateTo(
+      _scrollController.jumpTo(
         _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
       );
     }
   }
 
   void _sendMessage() {
     if (_messageController.text.trim().isEmpty) return;
-    
+
     context.read<ChatConversationBloc>().add(
           SendMessage(widget.conversation.id, _messageController.text.trim()),
         );
     _messageController.clear();
-    _scrollToBottom();
+
+    // Delay nhẹ để chắc chắn đã build xong
+    Future.delayed(Duration(milliseconds: 100), _scrollToBottom);
   }
 
   @override
   Widget build(BuildContext context) {
+    // Lắng nghe khi bàn phím bật lên → cuộn xuống cuối
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (MediaQuery.of(context).viewInsets.bottom > 0) {
+        _scrollToBottom();
+      }
+    });
+
     return Scaffold(
       appBar: ChatConversationAppBar(),
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true,
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
             margin: EdgeInsets.symmetric(horizontal: 16.w),
@@ -108,8 +112,8 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
                   }
 
                   if (state is ChatConversationLoaded) {
-                    // Scroll to bottom when messages change
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                    // Scroll ngay sau khi render xong frame
+                    SchedulerBinding.instance.addPostFrameCallback((_) {
                       _scrollToBottom();
                     });
 
@@ -120,7 +124,6 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
                       separatorBuilder: (context, index) => SizedBox(height: 8.h),
                       itemBuilder: (context, index) {
                         final msg = state.messages[index];
-                        print('Check ID: ${msg.senderId} - ${state.currentUserId}');
                         return MessageItem(
                           message: msg,
                           isSender: msg.senderId == state.currentUserId,

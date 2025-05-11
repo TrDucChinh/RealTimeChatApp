@@ -12,8 +12,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   ChatBloc({required String token})
       : _networkService = NetworkService(
-          // baseUrl: 'http://10.0.2.2:3000', // emulator IP address
-          baseUrl: baseUrl2, // Localhost for real device
+          baseUrl: baseUrl, // emulator IP address
+          // baseUrl: baseUrl2, // Localhost for real device
           token: token,
         ),
         super(ChatInitial()) {

@@ -20,6 +20,16 @@
     "cancel": "Hủy",
     "search": "Tìm Kiếm",
     "seach_friend_hint": "Nhập Email Hoặc Tên Tài Khoản",
-    "message": "Tin Nhắn"
+    "message": "Tin Nhắn",
+    "login": "Đăng Nhập",
+    "register": "Đăng Ký",
+    "login_title": "Nhập Email",
+    "email": "Email",
+    "password": "Mật Khẩu",
+    "forgot_password": "Quên Mật Khẩu ?",
+    "sign_in": "Đăng Nhập",
+    "email_required": "Email là bắt buộc",
+    "invalid_email": "Email không hợp lệ",
+    "password_required": "Mật khẩu là bắt buộc"
   }
   

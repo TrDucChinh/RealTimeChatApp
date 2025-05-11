@@ -20,6 +20,7 @@ class SendMessage extends ChatConversationEvent {
   final String conversationId;
   final String content;
 
+
   const SendMessage(this.conversationId, this.content);
 
   @override

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AppTextStyles {
+  static const String hintFontFamily = 'Inter';
   static String fontFamily = 'Poppins';
   static TextStyle semiBold_40px = TextStyle(
     fontFamily: fontFamily,
@@ -86,6 +87,11 @@ class AppTextStyles {
     fontSize: 18.sp,
     fontWeight: FontWeight.w500,
   );
+  static TextStyle medium_32px = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 32.sp,
+    fontWeight: FontWeight.w500,
+  );
 
   static TextStyle bold_16px = TextStyle(
     fontFamily: fontFamily,
@@ -97,5 +103,16 @@ class AppTextStyles {
     fontFamily: fontFamily,
     fontSize: 12.sp,
     fontWeight: FontWeight.w700,
+  );
+  static TextStyle bold_35px = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 35.sp,
+    fontWeight: FontWeight.w700,
+  );
+
+  static TextStyle hintTextStyle = TextStyle(
+    fontFamily: hintFontFamily,
+    fontSize: 14.sp,
+    fontWeight: FontWeight.w500,
   );
 }

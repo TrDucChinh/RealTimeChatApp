@@ -18,7 +18,8 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
     required String token,
     required String conversationId,
   })  : _networkService = NetworkService(
-          baseUrl: baseUrl2,
+          // baseUrl: baseUrl2,
+          baseUrl: baseUrl,
           token: token,
         ),
         _conversationId = conversationId,
@@ -37,7 +38,8 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
 
   void _initSocketService(String token) {
     _socketService = SocketService(
-      baseUrl: baseUrl2,
+      // baseUrl: baseUrl2,
+      baseUrl: baseUrl,
       token: token,
       conversationId: _conversationId,
     );
@@ -81,6 +83,7 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
         final messageData = {
           'text': event.content,
           'conversationId': _conversationId,
+          'senderId': _getUserIdFromToken(token),
           'messageType': 'text',
           'attachments': [],
           'status': {'status': 'sent'},
@@ -104,6 +107,7 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
           _socketService.sendMessage({
             'text': event.content,
             'conversationId': _conversationId,
+            'senderId': _currentUserId,
             'messageType': 'text',
             'attachments': [],
             'status': {'status': 'sent'},
@@ -136,7 +140,7 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
 
   @override
   Future<void> close() {
-    _socketService.dispose(); // ✅ Sửa ở đây
+    _socketService.dispose();
     return super.close();
   }
 

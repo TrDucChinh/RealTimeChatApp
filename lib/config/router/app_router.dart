@@ -2,14 +2,18 @@ import 'package:chat_app_ttcs/screens/chats/pages/chat_screen.dart';
 import 'package:chat_app_ttcs/screens/friends/pages/add_friend_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../common/widgets/custom_bottom_navbar.dart';
 import '../../sample_token.dart';
+import '../../screens/auth/pages/login_screen.dart';
 import '../../screens/chats_conversation/pages/chat_conversation_screen.dart';
 import '../../models/conversation_model.dart';
+import '../../screens/auth/bloc/auth_bloc.dart';
+import '../../services/network_service.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/chats',
+    initialLocation: '/login',
     routes: [
       ShellRoute(
         builder: (context, state, child) {
@@ -27,12 +31,32 @@ class AppRouter {
         },
         routes: [
           GoRoute(
+            path: '/login',
+            name: 'login',
+            builder: (context, state) => BlocProvider(
+              create: (context) => AuthBloc(
+                NetworkService(
+                  baseUrl: baseUrl,
+                  token: '',
+                ),
+              ),
+              child: const LoginScreen(),
+            ),
+          ),
+          GoRoute(
             path: '/chats',
             name: 'chats',
             builder: (context, state) => ChatsScreen(
-              token: token,
+              token: state.extra as String,
             ),
           ),
+          // GoRoute(
+          //   path: '/chats',
+          //   name: 'chats',
+          //   builder: (context, state) => ChatsScreen(
+          //     token: token,
+          //   ),
+          // ),
           GoRoute(
             path: '/groups',
             name: 'groups',

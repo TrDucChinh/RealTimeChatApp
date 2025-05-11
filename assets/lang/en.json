@@ -20,6 +20,16 @@
     "cancel": "Cancel",
     "search": "Search",
     "seach_friend_hint": "Enter Email Or Username",
-    "message": "Message"
+    "message": "Message",
+    "login": "Login",
+    "register": "Register",
+    "login_title": "Enter\nYour Email",
+    "email": "Email",
+    "password": "Password",
+    "forgot_password": "Forgot Password ?",
+    "sign_in": "Sign In",
+    "email_required": "Email is required",
+    "invalid_email": "Invalid email",
+    "password_required": "Password is required"
   }
   
