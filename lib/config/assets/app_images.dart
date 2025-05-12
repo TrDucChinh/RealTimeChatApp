@@ -6,4 +6,5 @@ class AppImages {
   static const String logoText = '${basePath}logo_text$format';
   static const String cardSearch = '${basePath}card_search$format';
   static const String rectangle = '${basePath}rectangle$format';
+  static const String emailLock = '${basePath}email_lock$format';
 } 

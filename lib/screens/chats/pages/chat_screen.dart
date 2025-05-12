@@ -1,3 +1,4 @@
+import 'package:chat_app_ttcs/common/helper/helper.dart';
 import 'package:chat_app_ttcs/screens/chats/bloc/chat_bloc.dart';
 import 'package:chat_app_ttcs/screens/chats/bloc/chat_event.dart';
 import 'package:chat_app_ttcs/screens/chats/widgets/app_bar_chat.dart';
@@ -57,7 +58,7 @@ class ChatsScreen extends StatelessWidget {
                     },
                     child: ConversationItem(
                       conversation: conversation,
-                      currentUserId: '67f61de4128812c84510d102',
+                      currentUserId: Helper.getUserIdFromToken(token),
                     ),
                   );
                 },

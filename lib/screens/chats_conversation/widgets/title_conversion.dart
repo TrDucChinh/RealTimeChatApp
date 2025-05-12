@@ -12,13 +12,15 @@ class TitleConversion extends StatelessWidget {
   const TitleConversion({
     super.key,
     required this.conversation,
+    required this.currentUserId,
   });
 
   final ConversationModel conversation;
+  final String currentUserId;
 
   @override
   Widget build(BuildContext context) {
-    final otherUser = conversation.getOtherUser('67f61de4128812c84510d102');
+    final otherUser = conversation.getOtherUser(currentUserId);
 
     return Container(
       color: Colors.white,

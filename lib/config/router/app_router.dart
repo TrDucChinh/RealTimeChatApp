@@ -1,3 +1,5 @@
+import 'package:chat_app_ttcs/screens/auth/pages/confirm_reset.dart';
+import 'package:chat_app_ttcs/screens/auth/pages/forgot_password_screen.dart';
 import 'package:chat_app_ttcs/screens/chats/pages/chat_screen.dart';
 import 'package:chat_app_ttcs/screens/friends/pages/add_friend_screen.dart';
 import 'package:flutter/material.dart';
@@ -43,6 +45,20 @@ class AppRouter {
             ),
           ),
           GoRoute(
+            path: '/forgotPassword',
+            name: 'forgotPassword',
+            builder: (context, state) => ForgotPasswordScreen(),
+          ),
+          GoRoute(
+            path: '/confirm',
+            name: 'confirm',
+            builder: (context, state) {
+    
+              final email = state.extra as String? ?? '';
+              return ConfirmReset(email: email);
+            },
+          ),
+          GoRoute(
             path: '/chats',
             name: 'chats',
             builder: (context, state) => ChatsScreen(
@@ -78,19 +94,17 @@ class AppRouter {
           ),
         ],
       ),
-
       GoRoute(
-        path: '/add-friend',
+        path: '/addFriend',
         name: 'addFriend',
         builder: (context, state) {
           return const AddFriendScreen();
         },
       ),
-
       GoRoute(
         path: '/chatConversation/:id',
         name: 'chatConversation',
-        builder: (BuildContext context, GoRouterState state) {
+        builder: (context, state) {
           final String chatId = state.pathParameters['id'] ?? '';
           final params = state.extra as ChatConversationParams;
           return ChatConversationScreen(

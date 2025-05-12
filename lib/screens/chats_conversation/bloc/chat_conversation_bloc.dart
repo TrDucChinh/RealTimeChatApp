@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:chat_app_ttcs/common/helper/helper.dart';
 import 'package:chat_app_ttcs/models/message_model.dart';
 import 'package:chat_app_ttcs/sample_token.dart';
 import 'package:chat_app_ttcs/services/network_service.dart';
@@ -32,8 +33,7 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
   }
 
   void _initCurrentUserId(String token) {
-    _currentUserId = _getUserIdFromToken(token); // Extract from token
-    print('Current User ID: $_currentUserId');
+    _currentUserId = Helper.getUserIdFromToken(token);
   }
 
   void _initSocketService(String token) {
@@ -83,7 +83,7 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
         final messageData = {
           'text': event.content,
           'conversationId': _conversationId,
-          'senderId': _getUserIdFromToken(token),
+          'senderId': Helper.getUserIdFromToken(token), 
           'messageType': 'text',
           'attachments': [],
           'status': {'status': 'sent'},
@@ -144,19 +144,5 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
     return super.close();
   }
 
-  String _getUserIdFromToken(String token) {
-    try {
-      final parts = token.split('.');
-      if (parts.length != 3) throw Exception('Invalid token format');
 
-      final payloadBase64 = base64Url.normalize(parts[1]);
-      final payloadJson = utf8.decode(base64Url.decode(payloadBase64));
-      final Map<String, dynamic> payloadMap = jsonDecode(payloadJson);
-
-      return payloadMap['userId'] ?? '';
-    } catch (e) {
-      print('Failed to decode token: $e');
-      return '';
-    }
-  }
 }

@@ -24,7 +24,14 @@ class AppLocalizations {
     return true;
   }
 
-  String translate(String key) {
-    return _localizedStrings[key] ?? key;
+  String translate(String key, {Map<String, String>? params}) {
+    String translation = _localizedStrings[key] ?? key;
+
+    if (params != null) {
+      params.forEach((placeholder, value) {
+        translation = translation.replaceAll('{$placeholder}', value);
+      });
+    }
+    return translation;
   }
 }

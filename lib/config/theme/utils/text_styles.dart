@@ -104,6 +104,11 @@ class AppTextStyles {
     fontSize: 12.sp,
     fontWeight: FontWeight.w700,
   );
+  static TextStyle bold_20px = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 20.sp,
+    fontWeight: FontWeight.w700,
+  );
   static TextStyle bold_35px = TextStyle(
     fontFamily: fontFamily,
     fontSize: 35.sp,

@@ -157,8 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               alignment: Alignment.centerRight,
                               child: InkWell(
                                 onTap: () {
-                                  // Handle forgot password action
-                                  print('Forgot Password tapped');
+                                  context.pushNamed('forgotPassword');
                                 },
                                 child: Text(
                                   AppLocalizations.of(context).translate('forgot_password'),

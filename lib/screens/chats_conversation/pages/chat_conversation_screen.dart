@@ -7,6 +7,7 @@ import 'package:flutter/scheduler.dart';
 
 import '../../../config/theme/utils/app_colors.dart';
 import '../../../models/conversation_model.dart';
+import '../../../common/helper/helper.dart';
 import '../widgets/app_bar.dart';
 import '../bloc/chat_conversation_bloc.dart';
 import '../bloc/chat_conversation_event.dart';
@@ -43,6 +44,7 @@ class ChatConversationScreen extends StatelessWidget {
       )..add(LoadMessages(conversationId)),
       child: _ChatConversationContent(
         conversation: conversation,
+        token: token,
       ),
     );
   }
@@ -51,8 +53,10 @@ class ChatConversationScreen extends StatelessWidget {
 class _ChatConversationContent extends StatefulWidget {
   const _ChatConversationContent({
     required this.conversation,
+    required this.token,
   });
   final ConversationModel conversation;
+  final String token;
 
   @override
   State<_ChatConversationContent> createState() => _ChatConversationContentState();
@@ -92,6 +96,7 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
   @override
   Widget build(BuildContext context) {
     // Lắng nghe khi bàn phím bật lên → cuộn xuống cuối
+    print('ConversationID: ${widget.conversation.id}');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (MediaQuery.of(context).viewInsets.bottom > 0) {
         _scrollToBottom();
@@ -106,7 +111,10 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
         children: [
           Container(
             margin: EdgeInsets.symmetric(horizontal: 16.w),
-            child: TitleConversion(conversation: widget.conversation),
+            child: TitleConversion(
+              conversation: widget.conversation,
+              currentUserId: Helper.getUserIdFromToken(widget.token),
+            ),
           ),
           SizedBox(height: 24.h),
           Expanded(
