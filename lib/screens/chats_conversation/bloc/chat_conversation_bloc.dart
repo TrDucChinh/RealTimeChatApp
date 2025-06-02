@@ -213,7 +213,7 @@ class ChatConversationBloc
 
           // Tạo message với danh sách attachments đầy đủ
           final messageData = {
-            'text': event.caption ?? '',
+            'text': event.caption ?? 'Sent images', 
             'conversationId': _conversationId,
             'senderId': _currentUserId,
             'messageType': 'image',
@@ -221,9 +221,22 @@ class ChatConversationBloc
             'status': {'status': 'sent'},
           };
           print('Prepared message data: $messageData');
+          print('Conversation ID: $_conversationId');
+          print('Text content: ${messageData['text']}');
+          print('Attachments in messages: ${messageData['attachments']}');
+
+          // Validate required fields
+          if (messageData['conversationId'] == null || messageData['text'] == null) {
+            print('Missing required fields in message data');
+            print('Conversation ID present: ${messageData['conversationId'] != null}');
+            print('Text present: ${messageData['text'] != null}');
+            emit(ChatConversationError('Missing required fields in message'));
+            return;
+          }
 
           // Gửi message
           print('Sending message with attachments...');
+          print('Request body: ${jsonEncode(messageData)}');
           final response = await _networkService.post(
             '/message',
             body: messageData,
