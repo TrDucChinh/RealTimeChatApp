@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 import '../../../config/theme/utils/app_colors.dart';
 import '../../../models/conversation_model.dart';
@@ -75,6 +76,7 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
   final ScrollController _scrollController = ScrollController();
   final ImagePicker _picker = ImagePicker();
   static const int maxImages = 10;
+  List<XFile> _selectedImages = [];
 
   @override
   void dispose() {
@@ -94,27 +96,84 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
   Future<void> _pickImage(ImageSource source) async {
     try {
       if (source == ImageSource.gallery) {
-  
         final List<XFile> images = await _picker.pickMultiImage();
         if (images.isNotEmpty) {
           // Limit to maxImages
           final selectedImages = images.take(maxImages).toList();
-          print('Selected ${selectedImages.length} images:');
+          setState(() {
+            _selectedImages = List<XFile>.from(selectedImages);
+          });
+          print('Selected ${selectedImages.length} images from gallery:');
           for (var image in selectedImages) {
-            print('Image path: ${image.path}');
+            print('Gallery image path: ${image.path}');
           }
-    
         }
       } else {
         final XFile? image = await _picker.pickImage(source: source);
         if (image != null) {
-          print('Image picked: ${image.path}');
-      
+          setState(() {
+            _selectedImages = [image];
+          });
+          print('Camera image picked: ${image.path}');
         }
       }
     } catch (e) {
       print('Error picking image: $e');
     }
+  }
+
+  Widget _buildImagePreview() {
+    if (_selectedImages.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      height: 100.h,
+      margin: EdgeInsets.only(bottom: 8.h),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _selectedImages.length,
+        itemBuilder: (context, index) {
+          return Stack(
+            children: [
+              Container(
+                width: 100.w,
+                height: 100.h,
+                margin: EdgeInsets.only(right: 8.w),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8.r),
+                  image: DecorationImage(
+                    image: FileImage(File(_selectedImages[index].path)),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 4,
+                right: 12,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedImages.removeAt(index);
+                    });
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(4.r),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.close,
+                      size: 16.w,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   void _showImagePickerOptions() {
@@ -148,12 +207,38 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
   }
 
   void _sendMessage() {
-    if (_messageController.text.trim().isEmpty) return;
+    if (_messageController.text.trim().isEmpty && _selectedImages.isEmpty) return;
 
-    context.read<ChatConversationBloc>().add(
-          SendMessage(widget.conversation.id, _messageController.text.trim()),
-        );
+    print('Sending message with ${_selectedImages.length} images');
+    print('Message text: ${_messageController.text.trim()}');
+
+    if (_selectedImages.isNotEmpty) {
+      print('Preparing to send images...');
+      // Create a new list to ensure we're not passing a reference
+      final imagesToSend = List<XFile>.from(_selectedImages);
+      for (var image in imagesToSend) {
+        print('Image path to send: ${image.path}');
+      }
+      
+      context.read<ChatConversationBloc>().add(
+            SendImages(
+              widget.conversation.id,
+              imagesToSend,
+              caption: _messageController.text.trim(),
+            ),
+          );
+      print('SendImages event added to bloc with ${imagesToSend.length} images');
+    } else {
+      print('Sending text message only');
+      context.read<ChatConversationBloc>().add(
+            SendMessage(widget.conversation.id, _messageController.text.trim()),
+          );
+    }
+
     _messageController.clear();
+    setState(() {
+      _selectedImages.clear();
+    });
 
     // Delay nhẹ để chắc chắn đã build xong
     Future.delayed(Duration(milliseconds: 100), _scrollToBottom);
@@ -242,8 +327,7 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
                       );
                     }
 
-                    if (state is ChatConversationLoaded) {
-                      print('Building ListView with ${state.messages.length} messages');
+                    if (state is ChatConversationLoaded) { 
                       return ListView.separated(
                         controller: _scrollController,
                         padding: EdgeInsets.only(bottom: 16.h, top: 8.h),
@@ -251,7 +335,6 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
                         separatorBuilder: (context, index) => SizedBox(height: 8.h),
                         itemBuilder: (context, index) {
                           final msg = state.messages[index];
-                          print('Building message item: ${msg.id}');
                           return MessageItem(
                             message: msg,
                             isSender: msg.senderId == state.currentUserId,
@@ -268,39 +351,46 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
             SizedBox(height: 16.h),
             Container(
               margin: EdgeInsets.symmetric(horizontal: 16.w),
-              height: 50.h,
-              decoration: BoxDecoration(
-                color: AppColors.neutral_50,
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Row(
+              child: Column(
                 children: [
-                  IconButton(
-                    onPressed: _showImagePickerOptions,
-                    icon: const Icon(Icons.camera_alt),
-                    color: AppColors.neutral_500,
-                  ),
-                  Expanded(
-                    child: TextField(
-                      controller: _messageController,
-                      decoration: InputDecoration(
-                        hintText: 'Nhập tin nhắn',
-                        hintStyle: TextStyle(
-                          fontSize: 14.sp,
-                          color: AppColors.neutral_300,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 16.w,
-                          vertical: 12.h,
-                        ),
-                      ),
-                      onSubmitted: (_) => _sendMessage(),
+                  _buildImagePreview(),
+                  Container(
+                    height: 50.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.neutral_50,
+                      borderRadius: BorderRadius.circular(8.r),
                     ),
-                  ),
-                  IconButton(
-                    onPressed: _sendMessage,
-                    icon: const Icon(Icons.send),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: _showImagePickerOptions,
+                          icon: const Icon(Icons.camera_alt),
+                          color: AppColors.neutral_500,
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: _messageController,
+                            decoration: InputDecoration(
+                              hintText: 'Nhập tin nhắn',
+                              hintStyle: TextStyle(
+                                fontSize: 14.sp,
+                                color: AppColors.neutral_300,
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 16.w,
+                                vertical: 12.h,
+                              ),
+                            ),
+                            onSubmitted: (_) => _sendMessage(),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: _sendMessage,
+                          icon: const Icon(Icons.send),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

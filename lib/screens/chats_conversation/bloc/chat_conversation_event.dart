@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:image_picker/image_picker.dart';
 
 abstract class ChatConversationEvent extends Equatable {
   const ChatConversationEvent();
@@ -20,11 +21,21 @@ class SendMessage extends ChatConversationEvent {
   final String conversationId;
   final String content;
 
-
   const SendMessage(this.conversationId, this.content);
 
   @override
   List<Object> get props => [conversationId, content];
+}
+
+class SendImages extends ChatConversationEvent {
+  final String conversationId;
+  final List<XFile> images;
+  final String? caption;
+
+  const SendImages(this.conversationId, this.images, {this.caption});
+
+  @override
+  List<Object> get props => [conversationId, images.map((x) => x.path).toList(), caption ?? ''];
 }
 
 class NewMessageReceived extends ChatConversationEvent {

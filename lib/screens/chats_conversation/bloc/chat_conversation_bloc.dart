@@ -1,15 +1,18 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:chat_app_ttcs/common/helper/helper.dart';
 import 'package:chat_app_ttcs/models/message_model.dart';
 import 'package:chat_app_ttcs/sample_token.dart';
 import 'package:chat_app_ttcs/services/network_service.dart';
 import 'package:chat_app_ttcs/services/socket_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'chat_conversation_event.dart';
 import 'chat_conversation_state.dart';
 
-class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationState> {
+class ChatConversationBloc
+    extends Bloc<ChatConversationEvent, ChatConversationState> {
   final NetworkService _networkService;
   late SocketService _socketService;
   final String _conversationId;
@@ -29,11 +32,12 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
     _initCurrentUserId(token);
     on<LoadMessages>(_onLoadMessages);
     on<SendMessage>(_onSendMessage);
+    on<SendImages>(_onSendImages);
     on<NewMessageReceived>(_onNewMessageReceived);
-    
+
     print('Ensuring initial socket connection...');
     _socketService.ensureConnection(conversationId);
-    
+
     print('ChatConversationBloc initialized successfully');
   }
 
@@ -74,11 +78,11 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
     try {
       print('Loading messages for conversation: ${event.conversationId}');
       emit(ChatConversationLoading());
-      
+
       // Ensure socket is connected and joined to conversation
       print('Ensuring socket connection...');
       _socketService.ensureConnection(event.conversationId);
-      
+
       final response =
           await _networkService.get('/message/${event.conversationId}');
 
@@ -96,7 +100,8 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
         }
       } else {
         print('API Error Response: ${response.body}');
-        emit(ChatConversationError('Failed to load messages: ${response.statusCode}'));
+        emit(ChatConversationError(
+            'Failed to load messages: ${response.statusCode}'));
       }
     } catch (e, stackTrace) {
       print('Error in _onLoadMessages: $e');
@@ -135,13 +140,120 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
 
           final updatedMessages = List<MessageModel>.from(currentState.messages)
             ..add(savedMessage);
-          emit(ChatConversationLoaded(updatedMessages, currentUserId: _currentUserId));
-
+          emit(ChatConversationLoaded(updatedMessages,
+              currentUserId: _currentUserId),);
         } else {
           emit(ChatConversationError('Failed to send message'));
         }
       } catch (e) {
         print('Error sending message: $e');
+        emit(ChatConversationError(e.toString()));
+      }
+    }
+  }
+
+  Future<void> _onSendImages(
+    SendImages event,
+    Emitter<ChatConversationState> emit,
+  ) async {
+    if (state is ChatConversationLoaded) {
+      final currentState = state as ChatConversationLoaded;
+
+      try {
+        print('Starting image upload process...');
+        print('Number of images to upload: ${event.images.length}');
+        
+        if (event.images.isEmpty) {
+          print('No images to upload');
+          emit(ChatConversationError('No images selected'));
+          return;
+        }
+
+        // Convert XFile to File and validate
+        final files = <File>[];
+        for (final xFile in event.images) {
+          print('Processing image: ${xFile.path}');
+          final file = File(xFile.path);
+          if (await file.exists()) {
+            print('File exists and is valid: ${file.path}');
+            files.add(file);
+          } else {
+            print('File does not exist: ${file.path}');
+          }
+        }
+
+        if (files.isEmpty) {
+          print('No valid files to upload');
+          emit(ChatConversationError('No valid images to upload'));
+          return;
+        }
+
+        print('Files prepared for upload: ${files.length}');
+        for (final file in files) {
+          print('File path: ${file.path}');
+          print('File size: ${await file.length()} bytes');
+        }
+
+        // Upload images first
+        print('Sending upload request to server...');
+        final uploadResponse = await _networkService.uploadFiles(
+          '/media/upload-multiple',
+          files,
+        );
+        print('Upload Response Status: ${uploadResponse.statusCode}');
+        print('Upload Response Body: ${uploadResponse.body}');
+
+        if (uploadResponse.statusCode == 200) {
+          final uploadData = jsonDecode(uploadResponse.body);
+          print('Upload data decoded: $uploadData');
+
+          final List<Map<String, dynamic>> uploadedMedia =
+              List<Map<String, dynamic>>.from(uploadData);
+          print('Processed media data: $uploadedMedia');
+
+          // Tạo message với danh sách attachments đầy đủ
+          final messageData = {
+            'text': event.caption ?? '',
+            'conversationId': _conversationId,
+            'senderId': _currentUserId,
+            'messageType': 'image',
+            'attachments': uploadedMedia,
+            'status': {'status': 'sent'},
+          };
+          print('Prepared message data: $messageData');
+
+          // Gửi message
+          print('Sending message with attachments...');
+          final response = await _networkService.post(
+            '/message',
+            body: messageData,
+          );
+          print('Message send response status: ${response.statusCode}');
+          print('Message send response body: ${response.body}');
+
+          if (response.statusCode == 201) {
+            final responseData = jsonDecode(response.body);
+            print('Message saved successfully: $responseData');
+            final savedMessage = MessageModel.fromJson(responseData);
+
+            final updatedMessages =
+                List<MessageModel>.from(currentState.messages)
+                  ..add(savedMessage);
+            emit(ChatConversationLoaded(updatedMessages,
+                currentUserId: _currentUserId,),);
+            print('State updated with new message');
+          } else {
+            print('Failed to send message. Status: ${response.statusCode}');
+            emit(ChatConversationError('Failed to send images'));
+          }
+        } else {
+          print('Image upload failed. Status: ${uploadResponse.statusCode}');
+          print('Error response: ${uploadResponse.body}');
+          emit(ChatConversationError('Failed to upload images'));
+        }
+      } catch (e, stackTrace) {
+        print('Error sending images: $e');
+        print('Stack trace: $stackTrace');
         emit(ChatConversationError(e.toString()));
       }
     }
@@ -159,8 +271,9 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
 
       if (state is ChatConversationLoaded) {
         final currentState = state as ChatConversationLoaded;
-        print('Current state is ChatConversationLoaded with ${currentState.messages.length} messages');
-        
+        print(
+            'Current state is ChatConversationLoaded with ${currentState.messages.length} messages');
+
         final newMessage = MessageModel.fromJson(event.message);
         print('Parsed new message: ${newMessage.toJson()}');
         print('New message conversationId: ${newMessage.conversationId}');
@@ -178,7 +291,8 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
           final updatedMessages = List<MessageModel>.from(currentState.messages)
             ..add(newMessage);
           print('Emitting new state with ${updatedMessages.length} messages');
-          emit(ChatConversationLoaded(updatedMessages, currentUserId: _currentUserId));
+          emit(ChatConversationLoaded(updatedMessages,
+              currentUserId: _currentUserId));
           print('New state emitted successfully');
         } else {
           print('Message already exists, skipping');
@@ -198,6 +312,4 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
     _socketService.dispose();
     return super.close();
   }
-
-
 }

@@ -1,5 +1,8 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:io';
+import 'dart:async';
+import 'package:http_parser/http_parser.dart';
 
 class NetworkService {
   final String baseUrl;
@@ -64,6 +67,70 @@ class NetworkService {
       throw Exception('Network error: Please check your internet connection');
     } catch (e) {
       throw Exception('Failed to send data: ${e.toString()}');
+    }
+  }
+
+  Future<http.Response> uploadFiles(String endpoint, List<File> files) async {
+    try {
+      var request = http.MultipartRequest('POST', Uri.parse('$baseUrl$endpoint'));
+      
+      // Add necessary headers
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+        'Accept': '*/*',
+        'Connection': 'keep-alive',
+      });
+
+      // Add files to request as form-data
+      for (var i = 0; i < files.length; i++) {
+        print('Adding file ${i + 1}/${files.length} to request');
+        final file = files[i];
+        final fileSize = await file.length();
+        print('File size before upload: $fileSize bytes');
+        
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'media',
+            file.path,
+            contentType: MediaType('image', 'jpeg'), // Add content type
+          ),
+        );
+      }
+
+      print('Sending multipart request...');
+      // Send request with longer timeout
+      final streamedResponse = await request.send().timeout(
+        Duration(seconds: 60), // Increased timeout
+        onTimeout: () {
+          throw TimeoutException('Request timed out after 60 seconds');
+        },
+      );
+      
+      print('Converting streamed response to response...');
+      final response = await http.Response.fromStream(streamedResponse);
+      print('Response received with status: ${response.statusCode}');
+      print('Response headers: ${response.headers}');
+
+      if (response.statusCode == 401) {
+        throw Exception('Unauthorized: Please login again');
+      } else if (response.statusCode == 403) {
+        throw Exception('Forbidden: You don\'t have permission to access this resource');
+      } else if (response.statusCode == 404) {
+        throw Exception('Not found: The requested resource was not found');
+      } else if (response.statusCode >= 500) {
+        throw Exception('Server error: Please try again later');
+      }
+
+      return response;
+    } on TimeoutException {
+      print('Request timed out');
+      throw Exception('Request timed out. Please try again.');
+    } on http.ClientException catch (e) {
+      print('Network error: $e');
+      throw Exception('Network error: Please check your internet connection');
+    } catch (e) {
+      print('Error uploading files: $e');
+      throw Exception('Failed to upload files: ${e.toString()}');
     }
   }
 
