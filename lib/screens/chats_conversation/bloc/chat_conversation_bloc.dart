@@ -31,7 +31,6 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
     on<SendMessage>(_onSendMessage);
     on<NewMessageReceived>(_onNewMessageReceived);
     
-    // Ensure socket connection on bloc initialization
     print('Ensuring initial socket connection...');
     _socketService.ensureConnection(conversationId);
     
@@ -137,9 +136,7 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
           final updatedMessages = List<MessageModel>.from(currentState.messages)
             ..add(savedMessage);
           emit(ChatConversationLoaded(updatedMessages, currentUserId: _currentUserId));
-          
-          // Send through socket
-          _socketService.sendMessage(messageData);
+
         } else {
           emit(ChatConversationError('Failed to send message'));
         }

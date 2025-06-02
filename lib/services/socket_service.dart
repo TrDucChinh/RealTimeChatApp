@@ -66,12 +66,6 @@ class SocketService {
 
       _socket.onConnectError((err) {
         print('Socket connect error: $err');
-        print('Connection details:');
-        print('- Socket URL: $socketUrl');
-        print('- Conversation ID: $_conversationId');
-        print('- Token: ${_token.substring(0, 10)}...');
-        print('- Socket ID: ${_socket.id}');
-        print('- Transport: ${_socket.io?.engine?.transport?.name}');
       });
 
       _socket.onDisconnect((_) {
@@ -109,10 +103,6 @@ class SocketService {
       // Listen for new messages
       _socket.on('newMessage', (data) {
         print('New message event received: $data');
-        print('Socket state when receiving message:');
-        print('- Connected: ${_socket.connected}');
-        print('- Socket ID: ${_socket.id}');
-        print('- Transport: ${_socket.io?.engine?.transport?.name}');
         _handleNewMessage(data);
       });
 

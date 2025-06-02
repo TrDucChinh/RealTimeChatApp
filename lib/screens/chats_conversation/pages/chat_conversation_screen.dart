@@ -3,7 +3,6 @@ import 'package:chat_app_ttcs/screens/chats_conversation/widgets/title_conversio
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter/scheduler.dart';
 
 import '../../../config/theme/utils/app_colors.dart';
 import '../../../models/conversation_model.dart';
