@@ -30,6 +30,12 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
     on<LoadMessages>(_onLoadMessages);
     on<SendMessage>(_onSendMessage);
     on<NewMessageReceived>(_onNewMessageReceived);
+    
+    // Ensure socket connection on bloc initialization
+    print('Ensuring initial socket connection...');
+    _socketService.ensureConnection(conversationId);
+    
+    print('ChatConversationBloc initialized successfully');
   }
 
   void _initCurrentUserId(String token) {
@@ -45,8 +51,20 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
     );
 
     _socketService.onMessageReceived = (message) {
-      print('New message received in bloc: ${message.toJson()}');
-      add(NewMessageReceived(message.toJson()));
+      print('New message received in socket: ${message.toJson()}');
+      try {
+        final messageData = message.toJson();
+        // Thêm conversationId nếu chưa có
+        if (!messageData.containsKey('conversationId')) {
+          messageData['conversationId'] = _conversationId;
+        }
+        print('Adding NewMessageReceived event to bloc');
+        print('Message data to be added: $messageData');
+        add(NewMessageReceived(messageData));
+        print('NewMessageReceived event added to bloc');
+      } catch (e) {
+        print('Error processing socket message: $e');
+      }
     };
   }
 
@@ -55,7 +73,13 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
     Emitter<ChatConversationState> emit,
   ) async {
     try {
+      print('Loading messages for conversation: ${event.conversationId}');
       emit(ChatConversationLoading());
+      
+      // Ensure socket is connected and joined to conversation
+      print('Ensuring socket connection...');
+      _socketService.ensureConnection(event.conversationId);
+      
       final response =
           await _networkService.get('/message/${event.conversationId}');
 
@@ -64,6 +88,7 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
         print('API Response: $data');
         try {
           final messages = data.map((e) => MessageModel.fromJson(e)).toList();
+          print('Successfully loaded ${messages.length} messages');
           emit(ChatConversationLoaded(messages, currentUserId: _currentUserId));
         } catch (parseError) {
           print('Error parsing messages: $parseError');
@@ -113,18 +138,13 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
             ..add(savedMessage);
           emit(ChatConversationLoaded(updatedMessages, currentUserId: _currentUserId));
           
-          _socketService.sendMessage({
-            'text': event.content,
-            'conversationId': _conversationId,
-            'senderId': _currentUserId,
-            'messageType': 'text',
-            'attachments': [],
-            'status': {'status': 'sent'},
-          });
+          // Send through socket
+          _socketService.sendMessage(messageData);
         } else {
           emit(ChatConversationError('Failed to send message'));
         }
       } catch (e) {
+        print('Error sending message: $e');
         emit(ChatConversationError(e.toString()));
       }
     }
@@ -134,16 +154,45 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
     NewMessageReceived event,
     Emitter<ChatConversationState> emit,
   ) {
-    if (state is ChatConversationLoaded) {
-      final currentState = state as ChatConversationLoaded;
-      final newMessage = MessageModel.fromJson(event.message);
-      print('Processing new message: ${newMessage.toJson()}');
+    print('Processing new message event: ${event.message}');
+    try {
+      // Ensure socket is connected and joined to conversation
+      print('Ensuring socket connection for new message...');
+      _socketService.ensureConnection(_conversationId);
 
-      if (!currentState.messages.any((msg) => msg.id == newMessage.id)) {
-        final updatedMessages = List<MessageModel>.from(currentState.messages)
-          ..add(newMessage);
-        emit(ChatConversationLoaded(updatedMessages, currentUserId: _currentUserId));
+      if (state is ChatConversationLoaded) {
+        final currentState = state as ChatConversationLoaded;
+        print('Current state is ChatConversationLoaded with ${currentState.messages.length} messages');
+        
+        final newMessage = MessageModel.fromJson(event.message);
+        print('Parsed new message: ${newMessage.toJson()}');
+        print('New message conversationId: ${newMessage.conversationId}');
+        print('Current conversationId: $_conversationId');
+
+        // Kiểm tra xem tin nhắn có thuộc conversation hiện tại không
+        if (newMessage.conversationId != _conversationId) {
+          print('Message belongs to different conversation, skipping');
+          return;
+        }
+
+        // Kiểm tra nếu tin nhắn đã tồn tại
+        if (!currentState.messages.any((msg) => msg.id == newMessage.id)) {
+          print('Adding new message to list');
+          final updatedMessages = List<MessageModel>.from(currentState.messages)
+            ..add(newMessage);
+          print('Emitting new state with ${updatedMessages.length} messages');
+          emit(ChatConversationLoaded(updatedMessages, currentUserId: _currentUserId));
+          print('New state emitted successfully');
+        } else {
+          print('Message already exists, skipping');
+        }
+      } else {
+        print('State is not ChatConversationLoaded, reloading messages');
+        add(LoadMessages(_conversationId));
       }
+    } catch (e) {
+      print('Error processing new message: $e');
+      print('Problematic message data: ${event.message}');
     }
   }
 

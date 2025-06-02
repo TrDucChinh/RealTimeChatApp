@@ -37,11 +37,19 @@ class ChatConversationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('Building ChatConversationScreen');
+    print('ConversationId: $conversationId');
     return BlocProvider(
-      create: (context) => ChatConversationBloc(
-        token: token,
-        conversationId: conversationId,
-      )..add(LoadMessages(conversationId)),
+      create: (context) {
+        print('Creating ChatConversationBloc');
+        final bloc = ChatConversationBloc(
+          token: token,
+          conversationId: conversationId,
+        );
+        print('Adding LoadMessages event');
+        bloc.add(LoadMessages(conversationId));
+        return bloc;
+      },
       child: _ChatConversationContent(
         conversation: conversation,
         token: token,
@@ -107,108 +115,136 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
       appBar: ChatConversationAppBar(),
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: true,
-      body: Column(
-        children: [
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 16.w),
-            child: TitleConversion(
-              conversation: widget.conversation,
-              currentUserId: Helper.getUserIdFromToken(widget.token),
-            ),
-          ),
-          SizedBox(height: 24.h),
-          Expanded(
-            child: Container(
-              color: AppColors.neutral_50,
-              child: BlocBuilder<ChatConversationBloc, ChatConversationState>(
-                builder: (context, state) {
-                  if (state is ChatConversationLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (state is ChatConversationError) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(state.message),
-                          SizedBox(height: 16.h),
-                          ElevatedButton(
-                            onPressed: () {
-                              context.read<ChatConversationBloc>().add(
-                                    LoadMessages(widget.conversation.id),
-                                  );
-                            },
-                            child: const Text('Retry'),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  if (state is ChatConversationLoaded) {
-                    // Scroll ngay sau khi render xong frame
-                    SchedulerBinding.instance.addPostFrameCallback((_) {
-                      _scrollToBottom();
-                    });
-
-                    return ListView.separated(
-                      controller: _scrollController,
-                      padding: EdgeInsets.only(bottom: 16.h, top: 8.h),
-                      itemCount: state.messages.length,
-                      separatorBuilder: (context, index) => SizedBox(height: 8.h),
-                      itemBuilder: (context, index) {
-                        final msg = state.messages[index];
-                        return MessageItem(
-                          message: msg,
-                          isSender: msg.senderId == state.currentUserId,
-                        );
-                      },
-                    );
-                  }
-
-                  return const SizedBox.shrink();
-                },
+      body: BlocListener<ChatConversationBloc, ChatConversationState>(
+        listener: (context, state) {
+          print('BlocListener received state change: ${state.runtimeType}');
+          if (state is ChatConversationLoaded) {
+            print('State is ChatConversationLoaded with ${state.messages.length} messages');
+            // Scroll xuống cuối khi có tin nhắn mới
+            Future.delayed(Duration(milliseconds: 100), _scrollToBottom);
+          }
+        },
+        child: Column(
+          children: [
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 16.w),
+              child: TitleConversion(
+                conversation: widget.conversation,
+                currentUserId: Helper.getUserIdFromToken(widget.token),
               ),
             ),
-          ),
-          SizedBox(height: 16.h),
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 16.w),
-            height: 50.h,
-            decoration: BoxDecoration(
-              color: AppColors.neutral_50,
-              borderRadius: BorderRadius.circular(8.r),
+            SizedBox(height: 24.h),
+            Expanded(
+              child: Container(
+                color: AppColors.neutral_50,
+                child: BlocBuilder<ChatConversationBloc, ChatConversationState>(
+                  buildWhen: (previous, current) {
+                    print('BlocBuilder buildWhen called');
+                    print('Previous state: ${previous.runtimeType}');
+                    print('Current state: ${current.runtimeType}');
+                    
+                    // Luôn rebuild khi state thay đổi
+                    if (current is ChatConversationLoaded) {
+                      print('Current messages count: ${current.messages.length}');
+                      if (previous is ChatConversationLoaded) {
+                        print('Previous messages count: ${previous.messages.length}');
+                        // So sánh nội dung tin nhắn thay vì chỉ so sánh số lượng
+                        final hasNewMessages = current.messages.length > previous.messages.length ||
+                            current.messages.any((msg) => !previous.messages.any((prevMsg) => prevMsg.id == msg.id));
+                        print('Has new messages: $hasNewMessages');
+                        return hasNewMessages;
+                      }
+                      return true;
+                    }
+                    return true;
+                  },
+                  builder: (context, state) {
+                    print('BlocBuilder builder called with state: ${state.runtimeType}');
+                    if (state is ChatConversationLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (state is ChatConversationError) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(state.message),
+                            SizedBox(height: 16.h),
+                            ElevatedButton(
+                              onPressed: () {
+                                context.read<ChatConversationBloc>().add(
+                                      LoadMessages(widget.conversation.id),
+                                    );
+                              },
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    if (state is ChatConversationLoaded) {
+                      print('Building ListView with ${state.messages.length} messages');
+                      return ListView.separated(
+                        controller: _scrollController,
+                        padding: EdgeInsets.only(bottom: 16.h, top: 8.h),
+                        itemCount: state.messages.length,
+                        separatorBuilder: (context, index) => SizedBox(height: 8.h),
+                        itemBuilder: (context, index) {
+                          final msg = state.messages[index];
+                          print('Building message item: ${msg.id}');
+                          return MessageItem(
+                            message: msg,
+                            isSender: msg.senderId == state.currentUserId,
+                          );
+                        },
+                      );
+                    }
+
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: InputDecoration(
-                      hintText: 'Nhập tin nhắn',
-                      hintStyle: TextStyle(
-                        fontSize: 14.sp,
-                        color: AppColors.neutral_300,
+            SizedBox(height: 16.h),
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 16.w),
+              height: 50.h,
+              decoration: BoxDecoration(
+                color: AppColors.neutral_50,
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _messageController,
+                      decoration: InputDecoration(
+                        hintText: 'Nhập tin nhắn',
+                        hintStyle: TextStyle(
+                          fontSize: 14.sp,
+                          color: AppColors.neutral_300,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 12.h,
+                        ),
                       ),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                        vertical: 12.h,
-                      ),
+                      onSubmitted: (_) => _sendMessage(),
                     ),
-                    onSubmitted: (_) => _sendMessage(),
                   ),
-                ),
-                IconButton(
-                  onPressed: _sendMessage,
-                  icon: const Icon(Icons.send),
-                ),
-              ],
+                  IconButton(
+                    onPressed: _sendMessage,
+                    icon: const Icon(Icons.send),
+                  ),
+                ],
+              ),
             ),
-          ),
-          SizedBox(height: 8.h),
-        ],
+            SizedBox(height: 8.h),
+          ],
+        ),
       ),
     );
   }
