@@ -38,6 +38,17 @@ class SendImages extends ChatConversationEvent {
   List<Object> get props => [conversationId, images.map((x) => x.path).toList(), caption ?? ''];
 }
 
+class SendVideo extends ChatConversationEvent {
+  final String conversationId;
+  final XFile video;
+  final String? caption;
+
+  const SendVideo(this.conversationId, this.video, {this.caption});
+
+  @override
+  List<Object> get props => [conversationId, video.path, caption ?? ''];
+}
+
 class NewMessageReceived extends ChatConversationEvent {
   final Map<String, dynamic> message;
 

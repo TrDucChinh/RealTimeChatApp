@@ -78,6 +78,7 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
   final ImagePicker _picker = ImagePicker();
   static const int maxImages = 10;
   List<XFile> _selectedImages = [];
+  XFile? _selectedVideo;
 
   @override
   void dispose() {
@@ -94,6 +95,24 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
     }
   }
 
+  Future<void> _pickVideo(ImageSource source) async {
+    try {
+      final XFile? video = await _picker.pickVideo(
+        source: source,
+        maxDuration: const Duration(minutes: 5), // Giới hạn video 5 phút
+      );
+      if (video != null) {
+        setState(() {
+          _selectedVideo = video;
+          _selectedImages.clear(); // Clear images when video is selected
+        });
+        print('Video picked: ${video.path}');
+      }
+    } catch (e) {
+      print('Error picking video: $e');
+    }
+  }
+
   Future<void> _pickImage(ImageSource source) async {
     try {
       if (source == ImageSource.gallery) {
@@ -103,6 +122,7 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
           final selectedImages = images.take(maxImages).toList();
           setState(() {
             _selectedImages = List<XFile>.from(selectedImages);
+            _selectedVideo = null; // Clear video when images are selected
           });
           print('Selected ${selectedImages.length} images from gallery:');
           for (var image in selectedImages) {
@@ -114,6 +134,7 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
         if (image != null) {
           setState(() {
             _selectedImages = [image];
+            _selectedVideo = null; // Clear video when image is selected
           });
           print('Camera image picked: ${image.path}');
         }
@@ -123,16 +144,77 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
     }
   }
 
-  Widget _buildImagePreview() {
-    if (_selectedImages.isEmpty) return const SizedBox.shrink();
+  Widget _buildMediaPreview() {
+    if (_selectedImages.isEmpty && _selectedVideo == null) return const SizedBox.shrink();
 
     return Container(
       height: 100.h,
       margin: EdgeInsets.only(bottom: 8.h),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: _selectedImages.length,
+        itemCount: _selectedImages.length + (_selectedVideo != null ? 1 : 0),
         itemBuilder: (context, index) {
+          if (_selectedVideo != null && index == 0) {
+            return Stack(
+              children: [
+                Container(
+                  width: 100.w,
+                  height: 100.h,
+                  margin: EdgeInsets.only(right: 8.w),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8.r),
+                    color: Colors.black,
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Icon(
+                        Icons.play_circle_outline,
+                        size: 40.w,
+                        color: Colors.white,
+                      ),
+                      Positioned(
+                        bottom: 4,
+                        left: 4,
+                        child: Text(
+                          'Video',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12.sp,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  top: 4,
+                  right: 12,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedVideo = null;
+                      });
+                    },
+                    child: Container(
+                      padding: EdgeInsets.all(4.r),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.close,
+                        size: 16.w,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+
+          final imageIndex = _selectedVideo != null ? index - 1 : index;
           return Stack(
             children: [
               Container(
@@ -142,7 +224,7 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8.r),
                   image: DecorationImage(
-                    image: FileImage(File(_selectedImages[index].path)),
+                    image: FileImage(File(_selectedImages[imageIndex].path)),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -153,7 +235,7 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
                 child: GestureDetector(
                   onTap: () {
                     setState(() {
-                      _selectedImages.removeAt(index);
+                      _selectedImages.removeAt(imageIndex);
                     });
                   },
                   child: Container(
@@ -177,7 +259,7 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
     );
   }
 
-  void _showImagePickerOptions() {
+  void _showMediaPickerOptions() {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -186,7 +268,7 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
             children: <Widget>[
               ListTile(
                 leading: const Icon(Icons.photo_library),
-                title: const Text('Chọn từ thư viện (tối đa 10 ảnh)'),
+                title: const Text('Chọn ảnh từ thư viện (tối đa 10 ảnh)'),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.gallery);
@@ -200,6 +282,22 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
                   _pickImage(ImageSource.camera);
                 },
               ),
+              ListTile(
+                leading: const Icon(Icons.video_library),
+                title: const Text('Chọn video từ thư viện'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickVideo(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.videocam),
+                title: const Text('Quay video'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickVideo(ImageSource.camera);
+                },
+              ),
             ],
           ),
         );
@@ -208,19 +306,23 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
   }
 
   void _sendMessage() {
-    if (_messageController.text.trim().isEmpty && _selectedImages.isEmpty) return;
+    if (_messageController.text.trim().isEmpty && _selectedImages.isEmpty && _selectedVideo == null) return;
 
-    print('Sending message with ${_selectedImages.length} images');
+    print('Sending message with ${_selectedImages.length} images and ${_selectedVideo != null ? "1 video" : "no video"}');
     print('Message text: ${_messageController.text.trim()}');
 
-    if (_selectedImages.isNotEmpty) {
+    if (_selectedVideo != null) {
+      print('Sending video...');
+      context.read<ChatConversationBloc>().add(
+            SendVideo(
+              widget.conversation.id,
+              _selectedVideo!,
+              caption: _messageController.text.trim(),
+            ),
+          );
+    } else if (_selectedImages.isNotEmpty) {
       print('Preparing to send images...');
-      // Create a new list to ensure we're not passing a reference
       final imagesToSend = List<XFile>.from(_selectedImages);
-      for (final image in imagesToSend) {
-        print('Image path to send: ${image.path}');
-      }
-      
       context.read<ChatConversationBloc>().add(
             SendImages(
               widget.conversation.id,
@@ -228,7 +330,6 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
               caption: _messageController.text.trim(),
             ),
           );
-      print('SendImages event added to bloc with ${imagesToSend.length} images');
     } else {
       print('Sending text message only');
       context.read<ChatConversationBloc>().add(
@@ -239,9 +340,9 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
     _messageController.clear();
     setState(() {
       _selectedImages.clear();
+      _selectedVideo = null;
     });
 
-    // Delay nhẹ để chắc chắn đã build xong
     Future.delayed(Duration(milliseconds: 100), _scrollToBottom);
   }
 
@@ -354,7 +455,7 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
               margin: EdgeInsets.symmetric(horizontal: 16.w),
               child: Column(
                 children: [
-                  _buildImagePreview(),
+                  _buildMediaPreview(),
                   Container(
                     height: 50.h,
                     decoration: BoxDecoration(
@@ -364,8 +465,8 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
                     child: Row(
                       children: [
                         IconButton(
-                          onPressed: _showImagePickerOptions,
-                          icon: const Icon(Icons.camera_alt),
+                          onPressed: _showMediaPickerOptions,
+                          icon: const Icon(Icons.add_photo_alternate),
                           color: AppColors.neutral_500,
                         ),
                         Expanded(

@@ -34,5 +34,7 @@
   "reset_password_title": "Chúng tôi sẽ gửi cho bạn\nliên kết để đặt lại mật khẩu qua email.",
   "send": "Gửi",
   "confirm_description": "Chúng tôi đã gửi một email\ntới {email} với hướng dẫn\nđể đặt lại mật khẩu của bạn.",
-  "back_login": "Quay lại Đăng Nhập"
+  "back_login": "Quay lại Đăng Nhập",
+  "register_title": "Nhập email của bạn",
+  "sign_up": "Đăng Ký"
 }

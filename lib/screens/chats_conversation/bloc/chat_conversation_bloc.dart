@@ -32,6 +32,7 @@ class ChatConversationBloc
     on<LoadMessages>(_onLoadMessages);
     on<SendMessage>(_onSendMessage);
     on<SendImages>(_onSendImages);
+    on<SendVideo>(_onSendVideo);
     on<NewMessageReceived>(_onNewMessageReceived);
 
     print('Ensuring initial socket connection...');
@@ -271,6 +272,94 @@ class ChatConversationBloc
       } catch (e, stackTrace) {
         print('Error sending images: $e');
         print('Stack trace: $stackTrace');
+        emit(ChatConversationError(e.toString()));
+      }
+    }
+  }
+
+  Future<void> _onSendVideo(
+    SendVideo event,
+    Emitter<ChatConversationState> emit,
+  ) async {
+    if (state is ChatConversationLoaded) {
+      final currentState = state as ChatConversationLoaded;
+
+      try {
+        print('Starting video upload process...');
+        final videoFile = File(event.video.path);
+        
+        if (!await videoFile.exists()) {
+          print('Video file does not exist');
+          emit(ChatConversationError('Video file not found'));
+          return;
+        }
+
+        print('Video file size: ${await videoFile.length()} bytes');
+
+        // Upload video first
+        print('Sending video upload request to server...');
+        final uploadResponse = await _networkService.uploadFiles(
+          '/media/upload-multiple',
+          [videoFile],
+        );
+        print('Upload Response Status: ${uploadResponse.statusCode}');
+        print('Upload Response Body: ${uploadResponse.body}');
+
+        if (uploadResponse.statusCode == 200) {
+          final uploadData = jsonDecode(uploadResponse.body);
+          print('Upload data decoded: $uploadData');
+
+          final List<Map<String, dynamic>> uploadedMedia =
+              List<Map<String, dynamic>>.from(uploadData);
+          print('Processed media data: $uploadedMedia');
+
+          final messageData = {
+            'text': event.caption?.trim(),
+            'conversationId': _conversationId,
+            'senderId': _currentUserId,
+            'messageType': 'video',
+            'attachments': uploadedMedia.map((media) => {
+              'url': media['url'],
+              'type': Helper.getFileType(Helper.getFileName(media['originalname'], media['url'])),
+              'name': Helper.getFileName(media['originalname'], media['url']),
+              'size': media['size'] ?? 0,
+            },).toList(),
+            'status': {
+              'status': 'sent',
+              'timestamp': DateTime.now().toIso8601String(),
+            },
+          };
+
+          print('Prepared message data: $messageData');
+          print('Conversation ID: $_conversationId');
+          print('Text content: "${messageData['text']}"');
+          print('Attachments in messages: ${messageData['attachments']}');
+
+          // Save to database via REST
+          final response = await _networkService.post(
+            '/message',
+            body: messageData,
+          );
+
+          if (response.statusCode == 201) {
+            final responseData = jsonDecode(response.body);
+            print('Send Video Response: $responseData');
+            final savedMessage = MessageModel.fromJson(responseData);
+
+            final updatedMessages = List<MessageModel>.from(currentState.messages)
+              ..add(savedMessage);
+            emit(
+              ChatConversationLoaded(updatedMessages,
+                  currentUserId: _currentUserId),
+            );
+          } else {
+            emit(ChatConversationError('Failed to send video message'));
+          }
+        } else {
+          emit(ChatConversationError('Failed to upload video'));
+        }
+      } catch (e) {
+        print('Error sending video: $e');
         emit(ChatConversationError(e.toString()));
       }
     }

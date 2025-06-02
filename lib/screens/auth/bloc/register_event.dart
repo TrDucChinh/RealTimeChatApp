@@ -12,13 +12,13 @@ abstract class RegisterEvent {}
 class SignUpEvent extends RegisterEvent {
   final String email;
   final String password;
-  final String name;
+  final String username;
 
   SignUpEvent({
     required this.email,
     required this.password,
-    required this.name,
+    required this.username,
   });
 
-  List<Object> get props => [email, password, name];
+  List<Object> get props => [email, password, username];
 }

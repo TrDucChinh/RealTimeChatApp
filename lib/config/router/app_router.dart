@@ -1,6 +1,8 @@
 import 'package:chat_app_ttcs/screens/auth/bloc/register_bloc.dart';
 import 'package:chat_app_ttcs/screens/auth/pages/confirm_reset.dart';
 import 'package:chat_app_ttcs/screens/auth/pages/forgot_password_screen.dart';
+import 'package:chat_app_ttcs/screens/auth/pages/register_screen.dart';
+import 'package:chat_app_ttcs/screens/auth/pages/user_info.dart';
 import 'package:chat_app_ttcs/screens/chats/pages/chat_screen.dart';
 import 'package:chat_app_ttcs/screens/friends/pages/add_friend_screen.dart';
 import 'package:flutter/material.dart';
@@ -77,15 +79,12 @@ class AppRouter {
           GoRoute(
             path: '/register',
             name: 'register',
-            builder: (context, state) => BlocProvider(
-              create: (context) => RegisterBloc(
-                NetworkService(
-                  baseUrl: baseUrl2,
-                  token: '',
-                ),
-              ),
-              child: const LoginScreen(),
-            ),
+            builder: (context, state) => const RegisterScreen(),
+          ),
+          GoRoute(
+            path: '/user-info',
+            name: 'userInfo',
+            builder: (context, state) => const UserInfo(),
           ),
           GoRoute(
             path: '/chats',

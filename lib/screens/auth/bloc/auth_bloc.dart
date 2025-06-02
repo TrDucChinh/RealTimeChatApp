@@ -27,6 +27,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         '/auth/login',
         body: loginBody,
       );
+      print('Response status login: ${response.statusCode}');
       if (response.statusCode != 200) {
         emit(AuthError('Login failed'));
         return;

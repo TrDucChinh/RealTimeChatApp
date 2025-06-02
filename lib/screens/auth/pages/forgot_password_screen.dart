@@ -80,6 +80,8 @@ class ForgotPasswordScreen extends StatelessWidget {
                       send();
                     },
                     child: Container(
+                      alignment: Alignment.center,
+                      width: double.infinity,
                       padding: EdgeInsets.symmetric(
                         vertical: 17.h,
                         horizontal: 146.h,

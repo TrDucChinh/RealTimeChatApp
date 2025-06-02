@@ -17,15 +17,18 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     try {
       emit(RegisterLoading());
       final registerBody = {
+        'username': event.username,
         'email': event.email,
         'password': event.password,
-        'name': event.name,
       };
       final response = await _networkService.post(
         '/auth/register',
         body: registerBody,
       );
-      if (response.statusCode != 200) {
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      if (response.statusCode != 201) {
+        print('Registration failed: ${response.body}');
         emit(RegisterError('Registration failed'));
         return;
       }

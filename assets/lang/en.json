@@ -34,5 +34,7 @@
   "reset_password_title": "We will send you\na link to reset your password via email.",
   "send": "Send",
   "confirm_description": "We have sent an email\nto {email} with instructions\nto reset your password.",
-  "back_login": "Back to Login"
+  "back_login": "Back to Login",
+  "register_title": "Enter your email",
+  "sign_up": "Sign Up"
 }

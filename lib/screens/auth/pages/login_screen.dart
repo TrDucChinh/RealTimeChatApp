@@ -76,7 +76,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       InkWell(
-                        onTap: () {},
+                        onTap: () {
+                          context.pushNamed('register');
+                        },
                         child: Container(
                           padding: EdgeInsets.symmetric(
                             horizontal: 22.w,
