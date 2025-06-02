@@ -142,7 +142,7 @@ class ChatConversationBloc
             ..add(savedMessage);
           emit(
             ChatConversationLoaded(updatedMessages,
-                currentUserId: _currentUserId),
+                currentUserId: _currentUserId,),
           );
         } else {
           emit(ChatConversationError('Failed to send message'));
@@ -213,39 +213,27 @@ class ChatConversationBloc
               List<Map<String, dynamic>>.from(uploadData);
           print('Processed media data: $uploadedMedia');
 
-          // Tạo message với danh sách attachments đầy đủ
-          final messageText = (event.caption?.trim().isEmpty ?? true)
-              ? 'Sent images'
-              : event.caption!.trim();
-          print('Message text before sending: "$messageText"');
 
           final messageData = {
-            'text': messageText,
+            'text': event.caption?.trim(),
             'conversationId': _conversationId,
             'senderId': _currentUserId,
             'messageType': 'image',
-            'attachments': uploadedMedia.map((media) => media['url']).toList(),
+            'attachments': uploadedMedia.map((media) => {
+              'url': media['url'],
+              'type': Helper.getFileType(Helper.getFileName(media['originalname'], media['url'])),
+              'name': Helper.getFileName(media['originalname'], media['url']),
+              'size': media['size'] ?? 0,
+            },).toList(),
             'status': {
               'status': 'sent',
-              'timestamp': DateTime.now().toIso8601String()
+              'timestamp': DateTime.now().toIso8601String(),
             },
           };
           print('Prepared message data: $messageData');
           print('Conversation ID: $_conversationId');
           print('Text content: "${messageData['text']}"');
           print('Attachments in messages: ${messageData['attachments']}');
-
-          // Validate required fields
-          // if (messageData['conversationId'] == null ||
-          //     messageData['text'] == null ||
-          //     messageData['text'].toString().trim().isEmpty) {
-          //   print('Missing required fields in message data');
-          //   print('Conversation ID present: ${messageData['conversationId'] != null}');
-          //   print('Text present: ${messageData['text'] != null}');
-          //   print('Text empty: ${messageData['text'].toString().trim().isEmpty}');
-          //   emit(ChatConversationError('Missing required fields in message'));
-          //   return;
-          // }
 
           // Gửi message
           print('Sending message with attachments...');

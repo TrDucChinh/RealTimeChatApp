@@ -16,4 +16,60 @@ class Helper {
       return '';
     }
   }
+  static String getFileType(String fileName) {
+    final extension = fileName.toLowerCase().split('.').last;
+    switch (extension) {
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+      case 'webp':
+        return 'image';
+      case 'mp4':
+      case 'mov':
+      case 'avi':
+      case 'wmv':
+        return 'video';
+      case 'mp3':
+      case 'wav':
+      case 'ogg':
+        return 'audio';
+      case 'pdf':
+        return 'document';
+      case 'doc':
+      case 'docx':
+        return 'word';
+      case 'xls':
+      case 'xlsx':
+        return 'excel';
+      case 'ppt':
+      case 'pptx':
+        return 'powerpoint';
+      default:
+        return 'file';
+    }
+  }
+
+  static String getFileName(String? originalName, String url) {
+    if (originalName != null && originalName.isNotEmpty) {
+      return originalName;
+    }
+    
+    // Extract filename from URL
+    final uri = Uri.parse(url);
+    final pathSegments = uri.pathSegments;
+    if (pathSegments.isNotEmpty) {
+      final lastSegment = pathSegments.last;
+      // Remove any query parameters or hash
+      final fileName = lastSegment.split('?')[0].split('#')[0];
+      if (fileName.isNotEmpty) {
+        return fileName;
+      }
+    }
+    
+    // Generate a default name with timestamp if no name can be extracted
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    return 'file_$timestamp';
+  }
+
 }

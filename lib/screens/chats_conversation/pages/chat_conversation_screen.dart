@@ -221,31 +221,6 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
         print('Image path to send: ${image.path}');
       }
       
-      // Create a temporary message to show immediately
-      final tempMessage = MessageModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        text: _messageController.text.trim(),
-        senderId: Helper.getUserIdFromToken(widget.token),
-        conversationId: widget.conversation.id,
-        messageType: 'image',
-        attachments: imagesToSend.map((image) => image.path).toList(),
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        status: {'status': 'sending', 'timestamp': DateTime.now().toIso8601String()},
-        reactions: [],
-        emojiData: {'isCustomEmoji': false},
-      );
-
-      // Add the temporary message to the state
-      final currentState = context.read<ChatConversationBloc>().state;
-      if (currentState is ChatConversationLoaded) {
-        final updatedMessages = List<MessageModel>.from(currentState.messages)..add(tempMessage);
-        context.read<ChatConversationBloc>().emit(ChatConversationLoaded(
-          updatedMessages,
-          currentUserId: currentState.currentUserId,
-        ),);
-      }
-      
       context.read<ChatConversationBloc>().add(
             SendImages(
               widget.conversation.id,

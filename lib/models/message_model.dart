@@ -77,6 +77,19 @@ class MessageModel {
       senderId = senderIdData.toString();
     }
 
+    // Handle attachments
+    List<String> attachments = [];
+    if (json['attachments'] != null) {
+      if (json['attachments'] is List) {
+        attachments = (json['attachments'] as List).map((e) {
+          if (e is Map<String, dynamic>) {
+            return e['url']?.toString() ?? '';
+          }
+          return e.toString();
+        }).toList();
+      }
+    }
+
     return MessageModel(
       id: json['_id']?.toString() ?? '',
       conversationId: json['conversationId']?.toString() ?? '',
@@ -84,7 +97,7 @@ class MessageModel {
       sender: sender,
       text: json['text']?.toString() ?? '',
       messageType: json['messageType']?.toString() ?? 'text',
-      attachments: (json['attachments'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      attachments: attachments,
       status: json['status'] is Map ? json['status'] : {},
       emojiData: json['emojiData'] is Map ? json['emojiData'] : {'isCustomEmoji': false},
       reactions: (json['reactions'] as List?)
