@@ -8,6 +8,7 @@ import 'dart:io';
 
 import '../../../config/theme/utils/app_colors.dart';
 import '../../../models/conversation_model.dart';
+import '../../../models/message_model.dart';
 import '../../../common/helper/helper.dart';
 import '../widgets/app_bar.dart';
 import '../bloc/chat_conversation_bloc.dart';
@@ -216,8 +217,33 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
       print('Preparing to send images...');
       // Create a new list to ensure we're not passing a reference
       final imagesToSend = List<XFile>.from(_selectedImages);
-      for (var image in imagesToSend) {
+      for (final image in imagesToSend) {
         print('Image path to send: ${image.path}');
+      }
+      
+      // Create a temporary message to show immediately
+      final tempMessage = MessageModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        text: _messageController.text.trim(),
+        senderId: Helper.getUserIdFromToken(widget.token),
+        conversationId: widget.conversation.id,
+        messageType: 'image',
+        attachments: imagesToSend.map((image) => image.path).toList(),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        status: {'status': 'sending', 'timestamp': DateTime.now().toIso8601String()},
+        reactions: [],
+        emojiData: {'isCustomEmoji': false},
+      );
+
+      // Add the temporary message to the state
+      final currentState = context.read<ChatConversationBloc>().state;
+      if (currentState is ChatConversationLoaded) {
+        final updatedMessages = List<MessageModel>.from(currentState.messages)..add(tempMessage);
+        context.read<ChatConversationBloc>().emit(ChatConversationLoaded(
+          updatedMessages,
+          currentUserId: currentState.currentUserId,
+        ),);
       }
       
       context.read<ChatConversationBloc>().add(

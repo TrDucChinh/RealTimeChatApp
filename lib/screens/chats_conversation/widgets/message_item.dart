@@ -4,6 +4,7 @@ import 'package:chat_app_ttcs/config/theme/utils/text_styles.dart';
 import 'package:chat_app_ttcs/models/message_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'dart:io';
 
 class MessageItem extends StatelessWidget {
   const MessageItem({
@@ -45,11 +46,40 @@ class MessageItem extends StatelessWidget {
                       bottomRight: Radius.circular(isSender ? 0 : 12.r),
                     ),
                   ),
-                  child: Text(
-                    message.text,
-                    style: AppTextStyles.regular_16px.copyWith(
-                      color: isSender ? Colors.white : AppColors.neutral_900,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (message.messageType == 'image' && message.attachments.isNotEmpty)
+                        Container(
+                          constraints: BoxConstraints(
+                            maxWidth: 240.w,
+                          ),
+                          child: GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: message.attachments.length == 1 ? 1 : 2,
+                              crossAxisSpacing: 4.w,
+                              mainAxisSpacing: 4.h,
+                              childAspectRatio: message.attachments.length == 1 ? 1.5 : 1,
+                            ),
+                            itemCount: message.attachments.length,
+                            itemBuilder: (context, index) {
+                              return ClipRRect(
+                                borderRadius: BorderRadius.circular(8.r),
+                                child: _buildImage(message.attachments[index]),
+                              );
+                            },
+                          ),
+                        ),
+                      if (message.text.isNotEmpty)
+                        Text(
+                          message.text,
+                          style: AppTextStyles.regular_16px.copyWith(
+                            color: isSender ? Colors.white : AppColors.neutral_900,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 SizedBox(height: 4.h),
@@ -66,6 +96,50 @@ class MessageItem extends StatelessWidget {
             SizedBox(width: 8.w),
             _buildAvatar(),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImage(String imageUrl) {
+    // Check if the URL is a local file path
+    if (imageUrl.startsWith('/')) {
+      return Image.file(
+        File(imageUrl),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          print('Error loading local image: $error');
+          return _buildErrorWidget();
+        },
+      );
+    }
+
+    // For network images
+    return BaseCacheImage(
+      url: imageUrl,
+      fit: BoxFit.cover,
+      errorWidget: _buildErrorWidget(),
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    return Container(
+      color: AppColors.neutral_200,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.broken_image,
+            size: 24.w,
+            color: AppColors.neutral_500,
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            'Failed to load image',
+            style: AppTextStyles.regular_12px.copyWith(
+              color: AppColors.neutral_500,
+            ),
+          ),
         ],
       ),
     );
