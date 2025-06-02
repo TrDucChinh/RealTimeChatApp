@@ -1,8 +1,9 @@
+import 'package:chat_app_ttcs/common/widgets/base_image.dart';
+import 'package:chat_app_ttcs/config/theme/utils/app_colors.dart';
 import 'package:chat_app_ttcs/config/theme/utils/text_styles.dart';
+import 'package:chat_app_ttcs/models/message_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../config/theme/utils/app_colors.dart';
-import '../../../models/message_model.dart';
 
 class MessageItem extends StatelessWidget {
   const MessageItem({
@@ -16,84 +17,69 @@ class MessageItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 16.w),
-        child: Container(
-          constraints: BoxConstraints(
-            maxWidth: 305.w,
-          ),
-          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-          decoration: BoxDecoration(
-            color: isSender ? AppColors.primaryColor_500 : AppColors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(12.r),
-              topRight: Radius.circular(12.r),
-              bottomLeft: Radius.circular(isSender ? 12.r : 4.r),
-              bottomRight: Radius.circular(isSender ? 4.r : 12.r),
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Row(
+        mainAxisAlignment: isSender ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!isSender) ...[
+            BaseCacheImage(
+              url: message.sender?.avatarUrl ?? '',
+              width: 32.w,
+              height: 32.h,
+              borderRadius: BorderRadius.circular(16),
+              fit: BoxFit.cover,
             ),
-          ),
-          child: Column(
-            crossAxisAlignment: isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                message.text,
-                style: AppTextStyles.regular_16px.copyWith(
-                  color: isSender ? AppColors.white : AppColors.neutral_900,
-                ),
-              ),
-              SizedBox(height: 4.h),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    _formatTime(message.createdAt),
-                    style: AppTextStyles.medium_12px.copyWith(
-                      color: isSender ? AppColors.white.withOpacity(0.7) : AppColors.neutral_500,
+            SizedBox(width: 8.w),
+          ],
+          Flexible(
+            child: Column(
+              crossAxisAlignment: isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 8.h,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSender ? AppColors.primaryColor_500 : AppColors.neutral_100,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(12.r),
+                      topRight: Radius.circular(12.r),
+                      bottomLeft: Radius.circular(isSender ? 12.r : 0),
+                      bottomRight: Radius.circular(isSender ? 0 : 12.r),
                     ),
                   ),
-                  if (isSender) ...[
-                    SizedBox(width: 4.w),
-                    _buildStatusIcon(),
-                  ],
-                ],
-              ),
-            ],
+                  child: Text(
+                    message.text,
+                    style: AppTextStyles.regular_16px.copyWith(
+                      color: isSender ? Colors.white : AppColors.neutral_900,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  _formatTime(message.createdAt),
+                  style: AppTextStyles.regular_12px.copyWith(
+                    color: AppColors.neutral_500,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+          if (isSender) ...[
+            SizedBox(width: 8.w),
+            BaseCacheImage(
+              url: message.sender?.avatarUrl ?? '',
+              width: 32.w,
+              height: 32.h,
+              borderRadius: BorderRadius.circular(16),
+              fit: BoxFit.cover,
+            ),
+          ],
+        ],
       ),
-    );
-  }
-
-  Widget _buildStatusIcon() {
-    final status = message.status['status'] as String?;
-    IconData icon;
-    Color color;
-
-    switch (status) {
-      case 'sending':
-        icon = Icons.access_time;
-        color = AppColors.white.withOpacity(0.7);
-        break;
-      case 'sent':
-        icon = Icons.check;
-        color = AppColors.white.withOpacity(0.7);
-        break;
-      case 'failed':
-        icon = Icons.error_outline;
-        color = AppColors.red_500;
-        break;
-      default:
-        icon = Icons.check;
-        color = AppColors.white.withOpacity(0.7);
-    }
-
-    return Icon(
-      icon,
-      size: 16.sp,
-      color: color,
     );
   }
 

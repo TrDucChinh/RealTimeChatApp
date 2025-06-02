@@ -1,3 +1,4 @@
+import 'package:chat_app_ttcs/screens/auth/bloc/register_bloc.dart';
 import 'package:chat_app_ttcs/screens/auth/pages/confirm_reset.dart';
 import 'package:chat_app_ttcs/screens/auth/pages/forgot_password_screen.dart';
 import 'package:chat_app_ttcs/screens/chats/pages/chat_screen.dart';
@@ -37,7 +38,7 @@ class AppRouter {
             builder: (context, state) => BlocProvider(
               create: (context) => AuthBloc(
                 NetworkService(
-                  baseUrl: baseUrl,
+                  baseUrl: baseUrl2,
                   token: '',
                 ),
               ),
@@ -47,23 +48,63 @@ class AppRouter {
           GoRoute(
             path: '/forgotPassword',
             name: 'forgotPassword',
-            builder: (context, state) => ForgotPasswordScreen(),
+            builder: (context, state) => BlocProvider(
+              create: (context) => AuthBloc(
+                NetworkService(
+                  baseUrl: baseUrl2,
+                  token: '',
+                ),
+              ),
+              child: const ForgotPasswordScreen(),
+            ),
           ),
           GoRoute(
             path: '/confirm',
             name: 'confirm',
             builder: (context, state) {
-    
               final email = state.extra as String? ?? '';
-              return ConfirmReset(email: email);
+              return BlocProvider(
+                create: (context) => AuthBloc(
+                  NetworkService(
+                    baseUrl: baseUrl2,
+                    token: '',
+                  ),
+                ),
+                child: ConfirmReset(email: email),
+              );
             },
+          ),
+          GoRoute(
+            path: '/register',
+            name: 'register',
+            builder: (context, state) => BlocProvider(
+              create: (context) => RegisterBloc(
+                NetworkService(
+                  baseUrl: baseUrl2,
+                  token: '',
+                ),
+              ),
+              child: const LoginScreen(),
+            ),
           ),
           GoRoute(
             path: '/chats',
             name: 'chats',
-            builder: (context, state) => ChatsScreen(
-              token: state.extra as String,
-            ),
+            builder: (context, state) {
+              final token = state.extra as String?;
+              if (token == null || token.isEmpty) {
+                return BlocProvider(
+                  create: (context) => AuthBloc(
+                    NetworkService(
+                      baseUrl: baseUrl2,
+                      token: '',
+                    ),
+                  ),
+                  child: const LoginScreen(),
+                );
+              }
+              return ChatsScreen(token: token);
+            },
           ),
           GoRoute(
             path: '/groups',

@@ -33,7 +33,7 @@ class ConversationItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           BaseCacheImage(
-            url: otherUser.avatar,
+            url: otherUser.avatarUrl,
             width: 42.w,
             height: 42.h,
             borderRadius: BorderRadius.circular(25),
@@ -52,7 +52,7 @@ class ConversationItem extends StatelessWidget {
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  lastMessage!.text,
+                  lastMessage?.text ?? 'No messages yet',
                   style: AppTextStyles.bold_12px.copyWith(
                     color: AppColors.neutral_300,
                   ),
@@ -67,35 +67,35 @@ class ConversationItem extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                _formatTime(lastMessage.createdAt),
-                style: AppTextStyles.bold_12px.copyWith(
-                  color: AppColors.neutral_500,
+              if (lastMessage != null)
+                Text(
+                  _formatTime(lastMessage.createdAt),
+                  style: AppTextStyles.bold_12px.copyWith(
+                    color: AppColors.neutral_500,
+                  ),
                 ),
-              ),
               SizedBox(height: 10.h),
-              unreadCount.isEmpty
-                  ? SizedBox(height: 18.h)
-                  : ConstrainedBox(
-                      constraints: BoxConstraints(minWidth: 20.w),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 6.w),
-                        height: 18.h,
-                        decoration: BoxDecoration(
-                          color: AppColors.lightBlue_500, 
-                          borderRadius: BorderRadius.circular(4.r),
+              if (unreadCount.isNotEmpty)
+                ConstrainedBox(
+                  constraints: BoxConstraints(minWidth: 20.w),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 6.w),
+                    height: 18.h,
+                    decoration: BoxDecoration(
+                      color: AppColors.lightBlue_500,
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                    child: Center(
+                      child: Text(
+                        unreadCount.values.first.toString(),
+                        style: AppTextStyles.bold_12px.copyWith(
+                          color: AppColors.white,
                         ),
-                        child: Center(
-                          child: Text(
-                            unreadCount.toString(),
-                            style: AppTextStyles.bold_12px.copyWith(
-                              color: AppColors.white,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
+                  ),
+                ),
             ],
           ),
         ],

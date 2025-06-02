@@ -19,8 +19,8 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
     required String token,
     required String conversationId,
   })  : _networkService = NetworkService(
-          // baseUrl: baseUrl2,
-          baseUrl: baseUrl,
+          baseUrl: baseUrl2,
+          // baseUrl: baseUrl,
           token: token,
         ),
         _conversationId = conversationId,
@@ -38,8 +38,8 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
 
   void _initSocketService(String token) {
     _socketService = SocketService(
-      // baseUrl: baseUrl2,
-      baseUrl: baseUrl,
+      baseUrl: baseUrl2,
+      // baseUrl: baseUrl,
       token: token,
       conversationId: _conversationId,
     );
@@ -83,7 +83,7 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
         final messageData = {
           'text': event.content,
           'conversationId': _conversationId,
-          'senderId': Helper.getUserIdFromToken(token), 
+          'senderId': _currentUserId,
           'messageType': 'text',
           'attachments': [],
           'status': {'status': 'sent'},

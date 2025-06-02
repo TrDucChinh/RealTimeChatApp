@@ -127,7 +127,23 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
                   }
 
                   if (state is ChatConversationError) {
-                    return Center(child: Text(state.message));
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(state.message),
+                          SizedBox(height: 16.h),
+                          ElevatedButton(
+                            onPressed: () {
+                              context.read<ChatConversationBloc>().add(
+                                    LoadMessages(widget.conversation.id),
+                                  );
+                            },
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    );
                   }
 
                   if (state is ChatConversationLoaded) {

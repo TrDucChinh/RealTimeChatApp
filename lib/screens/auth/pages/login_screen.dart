@@ -126,11 +126,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               hintText: 'abc@gmail.com',
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
-                              validator: (value){
+                              validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return AppLocalizations.of(context).translate('email_required');
+                                  return AppLocalizations.of(context)
+                                      .translate('email_required');
                                 } else if (!Validate.isEmail(value)) {
-                                  return AppLocalizations.of(context).translate('invalid_email');
+                                  return AppLocalizations.of(context)
+                                      .translate('invalid_email');
                                 }
                                 return null;
                               },
@@ -140,7 +142,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             //Password
                             Text(
-                              AppLocalizations.of(context).translate('password'),
+                              AppLocalizations.of(context)
+                                  .translate('password'),
                               style: AppTextStyles.medium_12px.copyWith(
                                 color: AppColors.neutral_600,
                               ),
@@ -160,7 +163,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   context.pushNamed('forgotPassword');
                                 },
                                 child: Text(
-                                  AppLocalizations.of(context).translate('forgot_password'),
+                                  AppLocalizations.of(context)
+                                      .translate('forgot_password'),
                                   style: AppTextStyles.medium_16px.copyWith(
                                     color: Color(0xFF03A9F4),
                                   ),
@@ -175,25 +179,37 @@ class _LoginScreenState extends State<LoginScreen> {
                                 return InkWell(
                                   onTap: state is AuthLoading ? null : _login,
                                   child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: 16.h,
-                                      horizontal: 24.w,
-                                    ),
+                                    height:
+                                        48.h, // Cố định chiều cao của button
+                                    width: double.infinity,
                                     decoration: BoxDecoration(
                                       color: Color(0xFF03A9F4),
                                       borderRadius: BorderRadius.circular(10.r),
                                     ),
                                     child: Center(
-                                      child: state is AuthLoading
-                                          ? const CircularProgressIndicator(
-                                              color: Colors.white,
-                                            )
-                                          : Text(
-                                              AppLocalizations.of(context).translate('sign_in'),
-                                              style: AppTextStyles.hintTextStyle.copyWith(
-                                                color: AppColors.white,
+                                      child: AnimatedSwitcher(
+                                        duration:
+                                            const Duration(milliseconds: 200),
+                                        child: state is AuthLoading
+                                            ? SizedBox(
+                                                height: 20.h,
+                                                width: 20.h,
+                                                child:
+                                                    const CircularProgressIndicator(
+                                                  color: Colors.white,
+                                                  strokeWidth: 2.5,
+                                                ),
+                                              )
+                                            : Text(
+                                                AppLocalizations.of(context)
+                                                    .translate('sign_in'),
+                                                style: AppTextStyles
+                                                    .hintTextStyle
+                                                    .copyWith(
+                                                  color: AppColors.white,
+                                                ),
                                               ),
-                                            ),
+                                      ),
                                     ),
                                   ),
                                 );

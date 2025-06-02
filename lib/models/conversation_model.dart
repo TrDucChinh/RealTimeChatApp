@@ -5,7 +5,10 @@ class ConversationModel {
   final String id;
   final List<UserModel> participants;
   final String type;
-  final Map<String, dynamic> unreadCount;
+  final String? name; 
+  final String? avatar; 
+  final String createdBy;
+  final Map<String, int> unreadCount;
   final DateTime createdAt;
   final DateTime updatedAt;
   final MessageModel? lastMessage;
@@ -14,6 +17,9 @@ class ConversationModel {
     required this.id,
     required this.participants,
     required this.type,
+    this.name,
+    this.avatar,
+    required this.createdBy,
     required this.unreadCount,
     required this.createdAt,
     required this.updatedAt,
@@ -26,8 +32,14 @@ class ConversationModel {
       participants: (json['participants'] as List)
           .map((e) => UserModel.fromJson(e))
           .toList(),
-      type: json['type'],
-      unreadCount: json['unreadCount'] ?? {},
+      type: json['type'] ?? 'private',
+      name: json['name'], 
+      avatar: json['avatar'], 
+      createdBy: json['createdBy'] ?? '', 
+      unreadCount: (json['unreadCount'] as Map<String, dynamic>?)?.map(
+            (key, value) => MapEntry(key, value as int),
+          ) ??
+          {},
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
       lastMessage: json['lastMessage'] != null
@@ -41,6 +53,9 @@ class ConversationModel {
       '_id': id,
       'participants': participants.map((e) => e.toJson()).toList(),
       'type': type,
+      'name': name, // 🆕
+      'avatar': avatar, // 🆕
+      'createdBy': createdBy,
       'unreadCount': unreadCount,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),

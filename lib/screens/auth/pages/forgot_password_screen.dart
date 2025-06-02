@@ -16,7 +16,7 @@ class ForgotPasswordScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final TextEditingController _emailController = TextEditingController();
     final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-    void _send(){
+    void send() {
       if (_formKey.currentState!.validate()) {
         context.replaceNamed('confirm', extra: _emailController.text);
       }
@@ -77,7 +77,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                   ),
                   InkWell(
                     onTap: () {
-                      _send();
+                      send();
                     },
                     child: Container(
                       padding: EdgeInsets.symmetric(

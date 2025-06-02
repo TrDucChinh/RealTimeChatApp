@@ -12,8 +12,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   ChatBloc({required String token})
       : _networkService = NetworkService(
-          baseUrl: baseUrl, // emulator IP address
-          // baseUrl: baseUrl2, // Localhost for real device
+          // baseUrl: baseUrl, // emulator IP address
+          baseUrl: baseUrl2, // Localhost for real device
           token: token,
         ),
         super(ChatInitial()) {
@@ -31,14 +31,24 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-        final conversations =
-            data.map((json) => ConversationModel.fromJson(json)).toList();
+        print('Conversations data: $data');
+        final conversations = data.map((json) {
+          // Add unreadCount if not present in response
+          if (!json.containsKey('unreadCount')) {
+            json['unreadCount'] = {};
+          }
+          return ConversationModel.fromJson(json);
+        }).toList();
         emit(ChatLoaded(conversations));
       } else {
-        emit(ChatError('Failed to load conversations'));
+        final errorData = json.decode(response.body);
+        final errorMessage = errorData['message'] ?? 'Failed to load conversations';
+        emit(ChatError(errorMessage));
       }
     } catch (e) {
-      emit(ChatError(e.toString()));
+      print('Error loading conversations: $e');
+      // The NetworkService now provides user-friendly error messages
+      emit(ChatError(e.toString().replaceAll('Exception: ', '')));
     }
   }
 
@@ -53,13 +63,21 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        // Add unreadCount if not present in response
+        if (!data.containsKey('unreadCount')) {
+          data['unreadCount'] = {};
+        }
         final conversation = ConversationModel.fromJson(data);
         emit(ChatLoaded([conversation]));
       } else {
-        emit(ChatError('Failed to load conversation details'));
+        final errorData = json.decode(response.body);
+        final errorMessage = errorData['message'] ?? 'Failed to load conversation details';
+        emit(ChatError(errorMessage));
       }
     } catch (e) {
-      emit(ChatError(e.toString()));
+      print('Error loading conversation details: $e');
+      // The NetworkService now provides user-friendly error messages
+      emit(ChatError(e.toString().replaceAll('Exception: ', '')));
     }
   }
 }

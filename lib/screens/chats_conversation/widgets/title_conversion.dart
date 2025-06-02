@@ -29,7 +29,7 @@ class TitleConversion extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           BaseCacheImage(
-            url: otherUser.avatar,
+            url: otherUser.avatarUrl,
             width: 42.w,
             height: 42.h,
             borderRadius: BorderRadius.circular(25),

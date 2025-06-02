@@ -21,9 +21,23 @@ class NetworkService {
         Uri.parse('$baseUrl$endpoint'),
         headers: _headers,
       );
+      
+      // Check for common error status codes
+      if (response.statusCode == 401) {
+        throw Exception('Unauthorized: Please login again');
+      } else if (response.statusCode == 403) {
+        throw Exception('Forbidden: You don\'t have permission to access this resource');
+      } else if (response.statusCode == 404) {
+        throw Exception('Not found: The requested resource was not found');
+      } else if (response.statusCode >= 500) {
+        throw Exception('Server error: Please try again later');
+      }
+      
       return response;
+    } on http.ClientException {
+      throw Exception('Network error: Please check your internet connection');
     } catch (e) {
-      throw Exception('Network error: $e');
+      throw Exception('Failed to load data: ${e.toString()}');
     }
   }
 
@@ -34,9 +48,22 @@ class NetworkService {
         headers: _headers,
         body: body != null ? json.encode(body) : null,
       );
+      
+      if (response.statusCode == 401) {
+        throw Exception('Unauthorized: Please login again');
+      } else if (response.statusCode == 403) {
+        throw Exception('Forbidden: You don\'t have permission to access this resource');
+      } else if (response.statusCode == 404) {
+        throw Exception('Not found: The requested resource was not found');
+      } else if (response.statusCode >= 500) {
+        throw Exception('Server error: Please try again later');
+      }
+      
       return response;
+    } on http.ClientException {
+      throw Exception('Network error: Please check your internet connection');
     } catch (e) {
-      throw Exception('Network error: $e');
+      throw Exception('Failed to send data: ${e.toString()}');
     }
   }
 
@@ -47,9 +74,22 @@ class NetworkService {
         headers: _headers,
         body: body != null ? json.encode(body) : null,
       );
+      
+      if (response.statusCode == 401) {
+        throw Exception('Unauthorized: Please login again');
+      } else if (response.statusCode == 403) {
+        throw Exception('Forbidden: You don\'t have permission to access this resource');
+      } else if (response.statusCode == 404) {
+        throw Exception('Not found: The requested resource was not found');
+      } else if (response.statusCode >= 500) {
+        throw Exception('Server error: Please try again later');
+      }
+      
       return response;
+    } on http.ClientException {
+      throw Exception('Network error: Please check your internet connection');
     } catch (e) {
-      throw Exception('Network error: $e');
+      throw Exception('Failed to update data: ${e.toString()}');
     }
   }
 
@@ -59,9 +99,22 @@ class NetworkService {
         Uri.parse('$baseUrl$endpoint'),
         headers: _headers,
       );
+      
+      if (response.statusCode == 401) {
+        throw Exception('Unauthorized: Please login again');
+      } else if (response.statusCode == 403) {
+        throw Exception('Forbidden: You don\'t have permission to access this resource');
+      } else if (response.statusCode == 404) {
+        throw Exception('Not found: The requested resource was not found');
+      } else if (response.statusCode >= 500) {
+        throw Exception('Server error: Please try again later');
+      }
+      
       return response;
+    } on http.ClientException {
+      throw Exception('Network error: Please check your internet connection');
     } catch (e) {
-      throw Exception('Lỗi kết nối: $e');
+      throw Exception('Failed to delete data: ${e.toString()}');
     }
   }
 
@@ -75,11 +128,11 @@ class NetworkService {
         return data.map((e) => e as Map<String, dynamic>).toList();
       } else {
         final errorData = jsonDecode(response.body);
-        throw Exception(errorData['message'] ?? 'Không thể tải tin nhắn');
+        throw Exception(errorData['message'] ?? 'Failed to load messages');
       }
     } catch (e) {
       if (e is FormatException) {
-        throw Exception('Dữ liệu không hợp lệ');
+        throw Exception('Invalid data format received from server');
       }
       rethrow;
     }

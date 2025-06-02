@@ -1,25 +1,28 @@
 class UserModel {
   final String id;
   final String username;
-  final String avatar;
-  final String status;
   final String email;
+  final String status;
+  final DateTime? lastSeen;
+  final Map<String, dynamic> avatar;
 
   UserModel({
     required this.id,
     required this.username,
-    required this.avatar,
-    required this.status,
     required this.email,
+    required this.status,
+    this.lastSeen,
+    required this.avatar,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['_id'],
       username: json['username'],
-      avatar: json['avatar'],
-      status: json['status'],
       email: json['email'],
+      status: json['status'],
+      lastSeen: json['lastSeen'] != null ? DateTime.parse(json['lastSeen']) : null,
+      avatar: json['avatar'] is Map ? json['avatar'] : {'url': json['avatar']},
     );
   }
 
@@ -27,8 +30,12 @@ class UserModel {
     return {
       '_id': id,
       'username': username,
-      'avatar': avatar,
+      'email': email,
       'status': status,
+      'lastSeen': lastSeen?.toIso8601String(),
+      'avatar': avatar,
     };
   }
+
+  String get avatarUrl => avatar['url'] ?? '';
 }

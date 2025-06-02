@@ -35,7 +35,25 @@ class ChatsScreen extends StatelessWidget {
             }
 
             if (state is ChatError) {
-              return Center(child: Text(state.message));
+              final errorMessage = state.message is String 
+                  ? state.message 
+                  : 'An error occurred while loading conversations';
+              print('Error: $errorMessage');
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(errorMessage),
+                    SizedBox(height: 16.h),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<ChatBloc>().add(LoadConversations());
+                      },
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              );
             }
 
             if (state is ChatLoaded) {
@@ -47,9 +65,10 @@ class ChatsScreen extends StatelessWidget {
                   final conversation = state.conversations[index];
                   return GestureDetector(
                     onTap: () {
+                      final conversationId = conversation.id.toString();
                       context.pushNamed(
                         'chatConversation',
-                        pathParameters: {'id': conversation.id},
+                        pathParameters: {'id': conversationId},
                         extra: ChatConversationParams(
                           conversation: conversation,
                           token: token,
