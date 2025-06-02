@@ -62,29 +62,37 @@ class MessageModel {
     UserModel? sender;
     String senderId;
     
-    if (senderIdData is Map<String, dynamic>) {
-      sender = UserModel.fromJson(senderIdData);
-      senderId = senderIdData['_id'];
+    if (senderIdData == null) {
+      senderId = '';
+    } else if (senderIdData is Map<String, dynamic>) {
+      try {
+        sender = UserModel.fromJson(senderIdData);
+        senderId = senderIdData['_id'] ?? '';
+      } catch (e) {
+        print('Error parsing sender data: $e');
+        print('Sender data: $senderIdData');
+        senderId = senderIdData['_id']?.toString() ?? '';
+      }
     } else {
       senderId = senderIdData.toString();
     }
 
     return MessageModel(
-      id: json['_id'],
-      conversationId: json['conversationId'],
+      id: json['_id']?.toString() ?? '',
+      conversationId: json['conversationId']?.toString() ?? '',
       senderId: senderId,
       sender: sender,
-      text: json['text'] ?? '',
-      messageType: json['messageType'] ?? 'text',
+      text: json['text']?.toString() ?? '',
+      messageType: json['messageType']?.toString() ?? 'text',
       attachments: (json['attachments'] as List?)?.map((e) => e.toString()).toList() ?? [],
-      status: json['status'] ?? {},
-      emojiData: json['emojiData'] ?? {'isCustomEmoji': false},
+      status: json['status'] is Map ? json['status'] : {},
+      emojiData: json['emojiData'] is Map ? json['emojiData'] : {'isCustomEmoji': false},
       reactions: (json['reactions'] as List?)
           ?.map((e) => Reaction.fromJson(e as Map<String, dynamic>))
           .toList() ??
           [],
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
+      createdAt: DateTime.parse(json['createdAt']?.toString() ?? DateTime.now().toIso8601String()),
+      updatedAt: DateTime.parse(json['updatedAt']?.toString() ?? DateTime.now().toIso8601String()),
     );
   }
 

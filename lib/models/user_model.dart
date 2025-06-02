@@ -16,13 +16,22 @@ class UserModel {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    Map<String, dynamic> avatarData;
+    if (json['avatar'] is Map) {
+      avatarData = json['avatar'];
+    } else if (json['avatar'] is String) {
+      avatarData = {'url': json['avatar']};
+    } else {
+      avatarData = {'url': ''};
+    }
+
     return UserModel(
       id: json['_id'],
       username: json['username'],
       email: json['email'],
       status: json['status'],
       lastSeen: json['lastSeen'] != null ? DateTime.parse(json['lastSeen']) : null,
-      avatar: json['avatar'] is Map ? json['avatar'] : {'url': json['avatar']},
+      avatar: avatarData,
     );
   }
 

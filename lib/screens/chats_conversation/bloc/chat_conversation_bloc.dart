@@ -62,13 +62,22 @@ class ChatConversationBloc extends Bloc<ChatConversationEvent, ChatConversationS
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         print('API Response: $data');
-        final messages = data.map((e) => MessageModel.fromJson(e)).toList();
-        emit(ChatConversationLoaded(messages, currentUserId: _currentUserId));
+        try {
+          final messages = data.map((e) => MessageModel.fromJson(e)).toList();
+          emit(ChatConversationLoaded(messages, currentUserId: _currentUserId));
+        } catch (parseError) {
+          print('Error parsing messages: $parseError');
+          print('Problematic data: $data');
+          emit(ChatConversationError('Error parsing messages: $parseError'));
+        }
       } else {
-        emit(ChatConversationError('Failed to load messages'));
+        print('API Error Response: ${response.body}');
+        emit(ChatConversationError('Failed to load messages: ${response.statusCode}'));
       }
-    } catch (e) {
-      emit(ChatConversationError(e.toString()));
+    } catch (e, stackTrace) {
+      print('Error in _onLoadMessages: $e');
+      print('Stack trace: $stackTrace');
+      emit(ChatConversationError('Error loading messages: $e'));
     }
   }
 

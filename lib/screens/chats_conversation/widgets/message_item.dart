@@ -24,13 +24,7 @@ class MessageItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isSender) ...[
-            BaseCacheImage(
-              url: message.sender?.avatarUrl ?? '',
-              width: 32.w,
-              height: 32.h,
-              borderRadius: BorderRadius.circular(16),
-              fit: BoxFit.cover,
-            ),
+            _buildAvatar(),
             SizedBox(width: 8.w),
           ],
           Flexible(
@@ -70,15 +64,51 @@ class MessageItem extends StatelessWidget {
           ),
           if (isSender) ...[
             SizedBox(width: 8.w),
-            BaseCacheImage(
-              url: message.sender?.avatarUrl ?? '',
-              width: 32.w,
-              height: 32.h,
-              borderRadius: BorderRadius.circular(16),
-              fit: BoxFit.cover,
-            ),
+            _buildAvatar(),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildAvatar() {
+    final avatarUrl = message.sender?.avatarUrl;
+    print('Avatar URL: $avatarUrl'); // Debug log
+
+    if (avatarUrl == null || avatarUrl.isEmpty) {
+      return Container(
+        width: 32.w,
+        height: 32.h,
+        decoration: BoxDecoration(
+          color: AppColors.neutral_200,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Icon(
+          Icons.person,
+          size: 20.w,
+          color: AppColors.neutral_500,
+        ),
+      );
+    }
+
+    return BaseCacheImage(
+      url: avatarUrl,
+      width: 32.w,
+      height: 32.h,
+      borderRadius: BorderRadius.circular(16),
+      fit: BoxFit.cover,
+      errorWidget: Container(
+        width: 32.w,
+        height: 32.h,
+        decoration: BoxDecoration(
+          color: AppColors.neutral_200,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Icon(
+          Icons.person,
+          size: 20.w,
+          color: AppColors.neutral_500,
+        ),
       ),
     );
   }
