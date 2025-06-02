@@ -6,7 +6,6 @@ import 'package:chat_app_ttcs/sample_token.dart';
 import 'package:chat_app_ttcs/services/network_service.dart';
 import 'package:chat_app_ttcs/services/socket_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 
 import 'chat_conversation_event.dart';
 import 'chat_conversation_state.dart';

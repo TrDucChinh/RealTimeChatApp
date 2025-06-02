@@ -16,6 +16,54 @@ class MessageItem extends StatelessWidget {
   final MessageModel message;
   final bool isSender;
 
+  void _showFullImage(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.zero,
+          child: Stack(
+            children: [
+              InteractiveViewer(
+                child: Center(
+                  child: imageUrl.startsWith('/')
+                      ? Image.file(
+                          File(imageUrl),
+                          fit: BoxFit.contain,
+                        )
+                      : BaseCacheImage(
+                          url: imageUrl,
+                          fit: BoxFit.contain,
+                        ),
+                ),
+              ),
+              Positioned(
+                top: 40.h,
+                right: 20.w,
+                child: GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.close,
+                      color: Colors.white,
+                      size: 24.w,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -65,9 +113,12 @@ class MessageItem extends StatelessWidget {
                             ),
                             itemCount: message.attachments.length,
                             itemBuilder: (context, index) {
-                              return ClipRRect(
-                                borderRadius: BorderRadius.circular(8.r),
-                                child: _buildImage(message.attachments[index]),
+                              return GestureDetector(
+                                onTap: () => _showFullImage(context, message.attachments[index]),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                  child: _buildImage(message.attachments[index]),
+                                ),
                               );
                             },
                           ),
