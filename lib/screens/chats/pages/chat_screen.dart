@@ -35,9 +35,7 @@ class ChatsScreen extends StatelessWidget {
             }
 
             if (state is ChatError) {
-              final errorMessage = state.message is String 
-                  ? state.message 
-                  : 'An error occurred while loading conversations';
+              final errorMessage = state.message;
               print('Error: $errorMessage');
               return Center(
                 child: Column(

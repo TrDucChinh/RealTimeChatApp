@@ -49,6 +49,9 @@ dependencies:
   #web socket
   socket_io_client:
   
+  #image picker
+  image_picker: ^1.0.7
+  
   cupertino_icons: ^1.0.8
 
 dev_dependencies:

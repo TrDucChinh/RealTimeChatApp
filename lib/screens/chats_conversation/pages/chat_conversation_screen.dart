@@ -3,6 +3,7 @@ import 'package:chat_app_ttcs/screens/chats_conversation/widgets/title_conversio
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../config/theme/utils/app_colors.dart';
 import '../../../models/conversation_model.dart';
@@ -72,6 +73,8 @@ class _ChatConversationContent extends StatefulWidget {
 class _ChatConversationContentState extends State<_ChatConversationContent> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final ImagePicker _picker = ImagePicker();
+  static const int maxImages = 10;
 
   @override
   void dispose() {
@@ -86,6 +89,62 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
         _scrollController.position.maxScrollExtent,
       );
     }
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      if (source == ImageSource.gallery) {
+  
+        final List<XFile> images = await _picker.pickMultiImage();
+        if (images.isNotEmpty) {
+          // Limit to maxImages
+          final selectedImages = images.take(maxImages).toList();
+          print('Selected ${selectedImages.length} images:');
+          for (var image in selectedImages) {
+            print('Image path: ${image.path}');
+          }
+    
+        }
+      } else {
+        final XFile? image = await _picker.pickImage(source: source);
+        if (image != null) {
+          print('Image picked: ${image.path}');
+      
+        }
+      }
+    } catch (e) {
+      print('Error picking image: $e');
+    }
+  }
+
+  void _showImagePickerOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Chọn từ thư viện (tối đa 10 ảnh)'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Chụp ảnh'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _sendMessage() {
@@ -216,6 +275,11 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
               ),
               child: Row(
                 children: [
+                  IconButton(
+                    onPressed: _showImagePickerOptions,
+                    icon: const Icon(Icons.camera_alt),
+                    color: AppColors.neutral_500,
+                  ),
                   Expanded(
                     child: TextField(
                       controller: _messageController,
