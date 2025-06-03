@@ -9,10 +9,11 @@ import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
 class ChatAppBar extends StatefulWidget implements PreferredSizeWidget {
-  const ChatAppBar({super.key});
+  final String token;
+  const ChatAppBar({super.key, required this.token});
 
   @override
-  Size get preferredSize =>  Size.fromHeight(60.h.toDouble());
+  Size get preferredSize => Size.fromHeight(60.h.toDouble());
 
   @override
   State<ChatAppBar> createState() => _ChatAppBarState();
@@ -71,7 +72,6 @@ class _ChatAppBarState extends State<ChatAppBar> {
                       hintStyle: AppTextStyles.regular_16px.copyWith(
                         color: AppColors.neutral_900,
                       ),
-                      
                       border: InputBorder.none,
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(
@@ -133,9 +133,7 @@ class _ChatAppBarState extends State<ChatAppBar> {
                   ],
                   onSelected: (String value) {
                     if (value == 'add_friend') {
-
-                      context.pushNamed('addFriend');
-                      
+                      context.pushNamed('addFriend', extra: widget.token);
                     } else if (value == 'create_group') {
                       // Navigate to create group screen
                     }
@@ -193,8 +191,10 @@ class _ChatAppBarState extends State<ChatAppBar> {
           icon,
           height: 24.h,
           width: 24.w,
-          colorFilter:
-              const ColorFilter.mode(AppColors.neutral_900, BlendMode.srcIn),
+          colorFilter: const ColorFilter.mode(
+            AppColors.neutral_900,
+            BlendMode.srcIn,
+          ),
         ),
         SizedBox(width: 12.w),
         Text(

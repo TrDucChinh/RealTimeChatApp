@@ -14,6 +14,7 @@ import '../../screens/auth/pages/login_screen.dart';
 import '../../screens/chats_conversation/pages/chat_conversation_screen.dart';
 import '../../screens/auth/bloc/auth_bloc.dart';
 import '../../services/network_service.dart';
+import '../../screens/friends/bloc/add_friend_bloc.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -135,10 +136,25 @@ class AppRouter {
         ],
       ),
       GoRoute(
-        path: '/addFriend',
+        path: '/add-friend',
         name: 'addFriend',
         builder: (context, state) {
-          return const AddFriendScreen();
+          final token = state.extra as String?;
+          if (token == null || token.isEmpty) {
+            return BlocProvider(
+              create: (context) => AuthBloc(
+                NetworkService(
+                  baseUrl: baseUrl2,
+                  token: '',
+                ),
+              ),
+              child: const LoginScreen(),
+            );
+          }
+          return BlocProvider(
+            create: (context) => AddFriendBloc(token: token),
+            child: AddFriendScreen(token: token),
+          );
         },
       ),
       GoRoute(

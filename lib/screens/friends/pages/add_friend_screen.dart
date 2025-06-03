@@ -1,9 +1,12 @@
 import 'package:chat_app_ttcs/config/assets/app_images.dart';
 import 'package:chat_app_ttcs/config/localization/app_localizations.dart';
 import 'package:chat_app_ttcs/config/theme/utils/text_styles.dart';
+import 'package:chat_app_ttcs/models/user_model.dart';
+import 'package:chat_app_ttcs/screens/friends/bloc/add_friend_bloc.dart';
 import 'package:chat_app_ttcs/screens/friends/widgets/app_bar_friend.dart';
 import 'package:chat_app_ttcs/screens/friends/widgets/friend_item.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -11,7 +14,8 @@ import '../../../config/assets/app_icons.dart';
 import '../../../config/theme/utils/app_colors.dart';
 
 class AddFriendScreen extends StatefulWidget {
-  const AddFriendScreen({super.key});
+  final String token;
+  const AddFriendScreen({super.key, required this.token});
 
   @override
   State<AddFriendScreen> createState() => _AddFriendScreenState();
@@ -19,18 +23,12 @@ class AddFriendScreen extends StatefulWidget {
 
 class _AddFriendScreenState extends State<AddFriendScreen> {
   final TextEditingController searchController = TextEditingController();
-  final List<FriendItem> friendList = [
-    FriendItem(
-      avatarUrl: 'https://images.unsplash.com/photo-1633332755192-727a05c4013d',
-      userName: 'David Wayne',
-      userEmail: '1235@gmail.com',
-    ),
-    FriendItem(
-      avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330',
-      userName: 'Sarah Johnson',
-      userEmail: 'sarah@gmail.com',
-    ),
-  ];
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<AddFriendBloc>().add(LoadUsers());
+  }
 
   @override
   void dispose() {
@@ -92,33 +90,50 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                   ),
                 ),
                 onSubmitted: (value) {
-                  searchController.clear();
+                  context.read<AddFriendBloc>().add(LoadUsers(searchQuery: value));
                 },
               ),
             ),
 
             /// Danh sách bạn bè hoặc ảnh khi danh sách trống
             Expanded(
-              child: friendList.isEmpty
-                  ? Center(
-                      child: Image.asset(
-                        AppImages.cardSearch,
-                        height: 320.h,
-                        width: 320.w,
-                      ),
-                    )
-                  : ListView(
+              child: BlocBuilder<AddFriendBloc, AddFriendState>(
+                builder: (context, state) {
+                  if (state is AddFriendLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is AddFriendError) {
+                    print('Error: ${state.message}');
+                    return Center(child: Text(state.message));
+                  } else if (state is AddFriendLoaded) {
+                    if (state.users.isEmpty) {
+                      return Center(
+                        child: Image.asset(
+                          AppImages.cardSearch,
+                          height: 320.h,
+                          width: 320.w,
+                        ),
+                      );
+                    }
+                    return ListView(
                       shrinkWrap: true,
                       physics: const AlwaysScrollableScrollPhysics(),
                       padding: EdgeInsets.symmetric(horizontal: 24.w),
                       children: [
-                        for (var i = 0; i < friendList.length; i++)
+                        for (final user in state.users)
                           Padding(
                             padding: EdgeInsets.only(bottom: 16.h),
-                            child: friendList[i],
+                            child: FriendItem(
+                              avatarUrl: user.avatarUrl,
+                              userName: user.username,
+                              userEmail: user.email,
+                            ),
                           ),
                       ],
-                    ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
             ),
           ],
         ),

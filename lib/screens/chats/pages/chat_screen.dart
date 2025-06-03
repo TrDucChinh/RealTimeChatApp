@@ -24,7 +24,7 @@ class ChatsScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) => ChatBloc(token: token)..add(LoadConversations()),
       child: Scaffold(
-        appBar: ChatAppBar(),
+        appBar: ChatAppBar(token: token),
         backgroundColor: AppColors.white,
         extendBody: true,
         extendBodyBehindAppBar: true,
