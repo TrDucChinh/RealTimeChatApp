@@ -8,6 +8,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:video_player/video_player.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/chat_conversation_bloc.dart';
+import '../bloc/chat_conversation_event.dart';
 
 class MessageItem extends StatefulWidget {
   const MessageItem({
@@ -39,14 +42,26 @@ class _MessageItemState extends State<MessageItem> {
         widget.message.attachments.isNotEmpty) {
       _initializeVideo();
     }
+    _updateSelectedReaction();
   }
 
   @override
   void didUpdateWidget(MessageItem oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.message.id != widget.message.id) {
+      _updateSelectedReaction();
+    }
+  }
+
+  void _updateSelectedReaction() {
+    if (widget.message.reactions.isNotEmpty) {
       setState(() {
-        _isHovered = false;
+        _selectedReaction = widget.message.reactions.first.emoji;
+        print('Updated reaction: $_selectedReaction');
+      });
+    } else {
+      setState(() {
+        _selectedReaction = null;
       });
     }
   }
@@ -295,14 +310,32 @@ class _MessageItemState extends State<MessageItem> {
   }
 
   void _handleReaction(String reaction) {
+    print('Handling reaction: $reaction');
+    print('Message ID: ${widget.message.id}');
     setState(() {
       _selectedReaction = reaction;
+      print('Selected reaction updated: $_selectedReaction');
     });
-    // TODO: Implement reaction saving logic
+    print('Adding AddReaction event to bloc');
+    context.read<ChatConversationBloc>().add(
+          AddReaction(widget.message.id, reaction),
+        );
+    print('AddReaction event added to bloc');
+  }
+
+  Map<String, int> _getReactionCounts() {
+    final counts = <String, int>{};
+    for (final reaction in widget.message.reactions) {
+      counts[reaction.emoji] = (counts[reaction.emoji] ?? 0) + 1;
+    }
+    return counts;
   }
 
   @override
   Widget build(BuildContext context) {
+    final reactionCounts = _getReactionCounts();
+    final hasReactions = reactionCounts.isNotEmpty;
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Row(
@@ -320,143 +353,150 @@ class _MessageItemState extends State<MessageItem> {
                   ? CrossAxisAlignment.end
                   : CrossAxisAlignment.start,
               children: [
-                GestureDetector(
-                  onLongPress: () {
-                    _showReactionMenu(context);
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 12.w,
-                      vertical: 8.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: widget.isSender
-                          ? AppColors.primaryColor_500
-                          : AppColors.neutral_100,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(12.r),
-                        topRight: Radius.circular(12.r),
-                        bottomLeft: Radius.circular(widget.isSender ? 12.r : 0),
-                        bottomRight: Radius.circular(widget.isSender ? 0 : 12.r),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    GestureDetector(
+                      onLongPress: () {
+                        _showReactionMenu(context);
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12.w,
+                          vertical: 8.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: widget.isSender
+                              ? AppColors.primaryColor_500
+                              : AppColors.neutral_100,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(12.r),
+                            topRight: Radius.circular(12.r),
+                            bottomLeft: Radius.circular(widget.isSender ? 12.r : 0),
+                            bottomRight: Radius.circular(widget.isSender ? 0 : 12.r),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (widget.message.messageType == 'video' &&
+                                widget.message.attachments.isNotEmpty)
+                              GestureDetector(
+                                onTap: () => _showFullVideo(
+                                  context,
+                                  widget.message.attachments.first,
+                                ),
+                                child: Container(
+                                  constraints: BoxConstraints(
+                                    maxWidth: 240.w,
+                                  ),
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Container(
+                                        width: 240.w,
+                                        height: 180.h,
+                                        color: Colors.black,
+                                        child: _buildVideoThumbnail(
+                                          widget.message.attachments.first,
+                                        ),
+                                      ),
+                                      Container(
+                                        width: 48.w,
+                                        height: 48.h,
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.5),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          Icons.play_arrow,
+                                          size: 32.w,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            if (widget.message.messageType == 'image' &&
+                                widget.message.attachments.isNotEmpty)
+                              Container(
+                                constraints: BoxConstraints(
+                                  maxWidth: 240.w,
+                                ),
+                                child: GridView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount:
+                                        widget.message.attachments.length == 1
+                                            ? 1
+                                            : 2,
+                                    crossAxisSpacing: 4.w,
+                                    mainAxisSpacing: 4.h,
+                                    childAspectRatio:
+                                        widget.message.attachments.length == 1
+                                            ? 1.5
+                                            : 1,
+                                  ),
+                                  itemCount: widget.message.attachments.length,
+                                  itemBuilder: (context, index) {
+                                    return GestureDetector(
+                                      onTap: () => _showFullImage(
+                                          context, widget.message.attachments[index]),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(8.r),
+                                        child: _buildImage(
+                                            widget.message.attachments[index]),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            if (widget.message.text.isNotEmpty)
+                              Text(
+                                widget.message.text,
+                                style: AppTextStyles.regular_16px.copyWith(
+                                  color: widget.isSender
+                                      ? Colors.white
+                                      : AppColors.neutral_900,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (widget.message.messageType == 'video' &&
-                            widget.message.attachments.isNotEmpty)
-                          GestureDetector(
-                            onTap: () => _showFullVideo(
-                              context,
-                              widget.message.attachments.first,
-                            ),
-                            child: Container(
-                              constraints: BoxConstraints(
-                                maxWidth: 240.w,
-                              ),
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  Container(
-                                    width: 240.w,
-                                    height: 180.h,
-                                    color: Colors.black,
-                                    child: _buildVideoThumbnail(
-                                      widget.message.attachments.first,
-                                    ),
-                                  ),
-                                  Container(
-                                    width: 48.w,
-                                    height: 48.h,
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.5),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      Icons.play_arrow,
-                                      size: 32.w,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                    if (_selectedReaction != null)
+                      Positioned(
+                        bottom: -8.h,
+                        right: widget.isSender ? null : 0,
+                        left: widget.isSender ? 0 : null,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 6.w,
+                            vertical: 2.h,
                           ),
-                        if (widget.message.messageType == 'image' &&
-                            widget.message.attachments.isNotEmpty)
-                          Container(
-                            constraints: BoxConstraints(
-                              maxWidth: 240.w,
-                            ),
-                            child: GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount:
-                                    widget.message.attachments.length == 1
-                                        ? 1
-                                        : 2,
-                                crossAxisSpacing: 4.w,
-                                mainAxisSpacing: 4.h,
-                                childAspectRatio:
-                                    widget.message.attachments.length == 1
-                                        ? 1.5
-                                        : 1,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10.r),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
                               ),
-                              itemCount: widget.message.attachments.length,
-                              itemBuilder: (context, index) {
-                                return GestureDetector(
-                                  onTap: () => _showFullImage(
-                                      context, widget.message.attachments[index]),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(8.r),
-                                    child: _buildImage(
-                                        widget.message.attachments[index]),
-                                  ),
-                                );
-                              },
-                            ),
+                            ],
                           ),
-                        if (widget.message.text.isNotEmpty)
-                          Text(
-                            widget.message.text,
-                            style: AppTextStyles.regular_16px.copyWith(
-                              color: widget.isSender
-                                  ? Colors.white
-                                  : AppColors.neutral_900,
-                            ),
+                          child: Text(
+                            _selectedReaction!,
+                            style: TextStyle(fontSize: 12.sp),
                           ),
-                      ],
-                    ),
-                  ),
+                        ),
+                      ),
+                  ],
                 ),
-                if (_selectedReaction != null)
-                  Padding(
-                    padding: EdgeInsets.only(top: 4.h),
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 6.w,
-                        vertical: 2.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10.r),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        _selectedReaction!,
-                        style: TextStyle(fontSize: 14.sp),
-                      ),
-                    ),
-                  ),
-                SizedBox(height: 4.h),
+                SizedBox(height: _selectedReaction != null ? 16.h : 4.h),
                 Text(
                   Helper.formatTime(widget.message.createdAt),
                   style: AppTextStyles.regular_12px.copyWith(
@@ -476,6 +516,7 @@ class _MessageItemState extends State<MessageItem> {
   }
 
   void _showReactionMenu(BuildContext context) {
+    print('Showing reaction menu');
     final RenderBox button = context.findRenderObject() as RenderBox;
     final RenderBox overlay = Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
     final RelativeRect position = RelativeRect.fromRect(
@@ -490,56 +531,63 @@ class _MessageItemState extends State<MessageItem> {
       context: context,
       barrierColor: Colors.transparent,
       builder: (BuildContext context) {
-        return Stack(
-          children: [
-            Positioned(
-              top: position.top - 50.h,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Material(
-                  elevation: 4,
-                  borderRadius: BorderRadius.circular(20.r),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 8.w,
-                      vertical: 4.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20.r),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: _reactions.map((reaction) {
-                        return GestureDetector(
-                          onTap: () {
-                            _handleReaction(reaction);
-                            Navigator.of(context).pop();
-                          },
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 4.w),
-                            child: Text(
-                              reaction,
-                              style: TextStyle(fontSize: 16.sp),
+        return Material(
+          color: Colors.transparent,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    print('Tapped outside reaction menu');
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+              Positioned(
+                top: position.top - 50.h,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Material(
+                    elevation: 4,
+                    borderRadius: BorderRadius.circular(20.r),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 8.w,
+                        vertical: 4.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20.r),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: _reactions.map((reaction) {
+                          return GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              print('Reaction tapped: $reaction');
+                              _handleReaction(reaction);
+                              print('Closing reaction menu');
+                              Navigator.of(context).pop();
+                            },
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 4.w),
+                              child: Text(
+                                reaction,
+                                style: TextStyle(fontSize: 16.sp),
+                              ),
                             ),
-                          ),
-                        );
-                      }).toList(),
+                          );
+                        }).toList(),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: Container(
-                  color: Colors.transparent,
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );

@@ -56,4 +56,14 @@ class NewMessageReceived extends ChatConversationEvent {
 
   @override
   List<Object> get props => [message];
+}
+
+class AddReaction extends ChatConversationEvent {
+  final String messageId;
+  final String emoji;
+
+  const AddReaction(this.messageId, this.emoji);
+
+  @override
+  List<Object> get props => [messageId, emoji];
 } 

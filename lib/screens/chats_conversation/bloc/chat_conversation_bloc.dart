@@ -34,6 +34,7 @@ class ChatConversationBloc
     on<SendImages>(_onSendImages);
     on<SendVideo>(_onSendVideo);
     on<NewMessageReceived>(_onNewMessageReceived);
+    on<AddReaction>(_onAddReaction);
 
     print('Ensuring initial socket connection...');
     _socketService.ensureConnection(conversationId);
@@ -410,6 +411,61 @@ class ChatConversationBloc
     } catch (e) {
       print('Error processing new message: $e');
       print('Problematic message data: ${event.message}');
+    }
+  }
+
+  Future<void> _onAddReaction(
+    AddReaction event,
+    Emitter<ChatConversationState> emit,
+  ) async {
+    print('Processing AddReaction event');
+    print('Message ID: ${event.messageId}');
+    print('Emoji: ${event.emoji}');
+    
+    if (state is ChatConversationLoaded) {
+      final currentState = state as ChatConversationLoaded;
+      print('Current state is ChatConversationLoaded');
+
+      try {
+        print('Sending reaction to server');
+        final response = await _networkService.post(
+          '/messages/${event.messageId}/react',
+          body: {
+            'emoji': event.emoji,
+          },
+        );
+        print('Server response status: ${response.statusCode}');
+        print('Server response body: ${response.body}');
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          final responseData = jsonDecode(response.body);
+          print('Parsed response data: $responseData');
+          final updatedMessage = MessageModel.fromJson(responseData);
+          print('Created updated message: ${updatedMessage.toJson()}');
+
+          final updatedMessages = currentState.messages.map((message) {
+            if (message.id == event.messageId) {
+              print('Updating message with ID: ${message.id}');
+              return updatedMessage;
+            }
+            return message;
+          }).toList();
+
+          print('Emitting new state with updated messages');
+          emit(ChatConversationLoaded(updatedMessages, currentUserId: _currentUserId));
+          print('New state emitted successfully');
+        } else {
+          print('Failed to add reaction. Status code: ${response.statusCode}');
+          print('Error response: ${response.body}');
+          emit(ChatConversationError('Failed to add reaction: ${response.statusCode}'));
+        }
+      } catch (e, stackTrace) {
+        print('Error adding reaction: $e');
+        print('Stack trace: $stackTrace');
+        emit(ChatConversationError('Failed to add reaction: $e'));
+      }
+    } else {
+      print('Current state is not ChatConversationLoaded');
     }
   }
 
