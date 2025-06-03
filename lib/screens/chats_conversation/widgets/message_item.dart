@@ -1,3 +1,4 @@
+import 'package:chat_app_ttcs/common/helper/helper.dart';
 import 'package:chat_app_ttcs/common/widgets/base_image.dart';
 import 'package:chat_app_ttcs/config/theme/utils/app_colors.dart';
 import 'package:chat_app_ttcs/config/theme/utils/text_styles.dart';
@@ -30,7 +31,8 @@ class _MessageItemState extends State<MessageItem> {
   @override
   void initState() {
     super.initState();
-    if (widget.message.messageType == 'video' && widget.message.attachments.isNotEmpty) {
+    if (widget.message.messageType == 'video' &&
+        widget.message.attachments.isNotEmpty) {
       _initializeVideo();
     }
   }
@@ -51,14 +53,14 @@ class _MessageItemState extends State<MessageItem> {
           formatHint: VideoFormat.hls,
         );
       }
-      
+
       await _videoController?.initialize().timeout(
         const Duration(seconds: 15),
         onTimeout: () {
           throw TimeoutException('Video initialization timed out');
         },
       );
-      
+
       if (mounted) {
         setState(() {
           _isVideoInitialized = true;
@@ -185,7 +187,7 @@ class _MessageItemState extends State<MessageItem> {
                 formatHint: VideoFormat.hls,
               )
             : VideoPlayerController.file(source);
-            
+
         await controller.initialize().timeout(
           const Duration(seconds: 15),
           onTimeout: () {
@@ -283,7 +285,8 @@ class _MessageItemState extends State<MessageItem> {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Row(
-        mainAxisAlignment: widget.isSender ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment:
+            widget.isSender ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!widget.isSender) ...[
@@ -292,7 +295,9 @@ class _MessageItemState extends State<MessageItem> {
           ],
           Flexible(
             child: Column(
-              crossAxisAlignment: widget.isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: widget.isSender
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
                 Container(
                   padding: EdgeInsets.symmetric(
@@ -300,7 +305,9 @@ class _MessageItemState extends State<MessageItem> {
                     vertical: 8.h,
                   ),
                   decoration: BoxDecoration(
-                    color: widget.isSender ? AppColors.primaryColor_500 : AppColors.neutral_100,
+                    color: widget.isSender
+                        ? AppColors.primaryColor_500
+                        : AppColors.neutral_100,
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(12.r),
                       topRight: Radius.circular(12.r),
@@ -311,9 +318,13 @@ class _MessageItemState extends State<MessageItem> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (widget.message.messageType == 'video' && widget.message.attachments.isNotEmpty)
+                      if (widget.message.messageType == 'video' &&
+                          widget.message.attachments.isNotEmpty)
                         GestureDetector(
-                          onTap: () => _showFullVideo(context, widget.message.attachments.first),
+                          onTap: () => _showFullVideo(
+                            context,
+                            widget.message.attachments.first,
+                          ),
                           child: Container(
                             constraints: BoxConstraints(
                               maxWidth: 240.w,
@@ -325,7 +336,9 @@ class _MessageItemState extends State<MessageItem> {
                                   width: 240.w,
                                   height: 180.h,
                                   color: Colors.black,
-                                  child: _buildVideoThumbnail(widget.message.attachments.first),
+                                  child: _buildVideoThumbnail(
+                                    widget.message.attachments.first,
+                                  ),
                                 ),
                                 Container(
                                   width: 48.w,
@@ -344,7 +357,8 @@ class _MessageItemState extends State<MessageItem> {
                             ),
                           ),
                         ),
-                      if (widget.message.messageType == 'image' && widget.message.attachments.isNotEmpty)
+                      if (widget.message.messageType == 'image' &&
+                          widget.message.attachments.isNotEmpty)
                         Container(
                           constraints: BoxConstraints(
                             maxWidth: 240.w,
@@ -352,19 +366,28 @@ class _MessageItemState extends State<MessageItem> {
                           child: GridView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: widget.message.attachments.length == 1 ? 1 : 2,
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount:
+                                  widget.message.attachments.length == 1
+                                      ? 1
+                                      : 2,
                               crossAxisSpacing: 4.w,
                               mainAxisSpacing: 4.h,
-                              childAspectRatio: widget.message.attachments.length == 1 ? 1.5 : 1,
+                              childAspectRatio:
+                                  widget.message.attachments.length == 1
+                                      ? 1.5
+                                      : 1,
                             ),
                             itemCount: widget.message.attachments.length,
                             itemBuilder: (context, index) {
                               return GestureDetector(
-                                onTap: () => _showFullImage(context, widget.message.attachments[index]),
+                                onTap: () => _showFullImage(
+                                    context, widget.message.attachments[index]),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(8.r),
-                                  child: _buildImage(widget.message.attachments[index]),
+                                  child: _buildImage(
+                                      widget.message.attachments[index]),
                                 ),
                               );
                             },
@@ -374,7 +397,9 @@ class _MessageItemState extends State<MessageItem> {
                         Text(
                           widget.message.text,
                           style: AppTextStyles.regular_16px.copyWith(
-                            color: widget.isSender ? Colors.white : AppColors.neutral_900,
+                            color: widget.isSender
+                                ? Colors.white
+                                : AppColors.neutral_900,
                           ),
                         ),
                     ],
@@ -382,7 +407,7 @@ class _MessageItemState extends State<MessageItem> {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  _formatTime(widget.message.createdAt),
+                  Helper.formatTime(widget.message.createdAt),
                   style: AppTextStyles.regular_12px.copyWith(
                     color: AppColors.neutral_500,
                   ),
@@ -483,19 +508,6 @@ class _MessageItemState extends State<MessageItem> {
         ),
       ),
     );
-  }
-
-  String _formatTime(DateTime time) {
-    final now = DateTime.now();
-    final diff = now.difference(time);
-
-    if (diff.inDays == 0) {
-      return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-    } else if (diff.inDays == 1) {
-      return 'Yesterday';
-    } else {
-      return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')} ${time.day.toString().padLeft(2, '0')}/${time.month.toString().padLeft(2, '0')}';
-    }
   }
 
   Widget _buildVideoThumbnail(String videoUrl) {

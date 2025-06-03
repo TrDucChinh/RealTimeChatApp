@@ -6,6 +6,7 @@ import 'package:chat_app_ttcs/common/widgets/base_image.dart';
 import 'package:chat_app_ttcs/config/theme/utils/text_styles.dart';
 import 'package:chat_app_ttcs/config/theme/utils/app_colors.dart';
 
+import '../../../common/helper/helper.dart';
 import '../../../models/conversation_model.dart';
 
 class ConversationItem extends StatelessWidget {
@@ -69,7 +70,7 @@ class ConversationItem extends StatelessWidget {
             children: [
               if (lastMessage != null)
                 Text(
-                  _formatTime(lastMessage.createdAt),
+                 Helper.formatTime(lastMessage.createdAt),
                   style: AppTextStyles.bold_12px.copyWith(
                     color: AppColors.neutral_500,
                   ),
@@ -103,19 +104,4 @@ class ConversationItem extends StatelessWidget {
     );
   }
 
-  String _formatTime(DateTime time) {
-    final now = DateTime.now();
-    final diff = now.difference(time);
-
-    if (diff.inDays == 0 && now.day == time.day) {
-      return DateFormat.Hm().format(time); // e.g. 10:25
-    } else if (diff.inDays == 1 ||
-        (now.day - time.day == 1 &&
-            now.month == time.month &&
-            now.year == time.year)) {
-      return 'Yesterday';
-    } else {
-      return '${DateFormat.Hm().format(time)}  ${DateFormat('dd/MM').format(time)}';
-    }
-  }
 }

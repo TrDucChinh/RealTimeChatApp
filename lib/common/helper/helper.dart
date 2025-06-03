@@ -16,6 +16,7 @@ class Helper {
       return '';
     }
   }
+
   static String getFileType(String fileName) {
     final extension = fileName.toLowerCase().split('.').last;
     switch (extension) {
@@ -54,7 +55,7 @@ class Helper {
     if (originalName != null && originalName.isNotEmpty) {
       return originalName;
     }
-    
+
     // Extract filename from URL
     final uri = Uri.parse(url);
     final pathSegments = uri.pathSegments;
@@ -66,10 +67,24 @@ class Helper {
         return fileName;
       }
     }
-    
+
     // Generate a default name with timestamp if no name can be extracted
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     return 'file_$timestamp';
   }
 
+  static String formatTime(DateTime time) {
+    // Chuyển thời gian UTC sang GMT+7
+    final gmt7 = time.toUtc().add(const Duration(hours: 7));
+    final now = DateTime.now().toUtc().add(const Duration(hours: 7));
+    final diff = now.difference(gmt7);
+
+    if (diff.inDays == 0) {
+      return '${gmt7.hour.toString().padLeft(2, '0')}:${gmt7.minute.toString().padLeft(2, '0')}';
+    } else if (diff.inDays == 1) {
+      return 'Yesterday';
+    } else {
+      return '${gmt7.hour.toString().padLeft(2, '0')}:${gmt7.minute.toString().padLeft(2, '0')} ${gmt7.day.toString().padLeft(2, '0')}/${gmt7.month.toString().padLeft(2, '0')}';
+    }
+  }
 }
