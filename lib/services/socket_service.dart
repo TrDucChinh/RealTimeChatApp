@@ -28,7 +28,6 @@ class SocketService {
     print('Token: ${_token.substring(0, 10)}...');
 
     try {
-      // Add /socket.io to baseUrl if not present
       final socketUrl = _baseUrl;
       print('Socket URL: $socketUrl');
 
@@ -61,7 +60,8 @@ class SocketService {
         print('Socket connected successfully');
         print('Socket ID: ${_socket.id}');
         print('Joining conversation: $_conversationId');
-        _socket.emit('joinConversation', _conversationId);
+        // _socket.emit('join', {'conversationId': _conversationId});
+        print('Join event emitted');
       });
 
       _socket.onConnectError((err) {
@@ -194,8 +194,7 @@ class SocketService {
     // Always rejoin the conversation to ensure we're listening
     print('Joining conversation: $conversationId');
     try {
-      _socket.emit('joinConversation', conversationId);
-      print('Join conversation event emitted');
+      _socket.emit('join', {'conversationId': conversationId});
     } catch (e) {
       print('Error joining conversation: $e');
       print('Stack trace: ${StackTrace.current}');
@@ -205,6 +204,11 @@ class SocketService {
   void sendMessage(Map<String, dynamic> message) {
     print('Sending message through socket: $message');
     try {
+      if (!_socket.connected) {
+        print('Socket not connected, attempting to connect...');
+        _socket.connect();
+      }
+
       _socket.emit('sendMessage', message);
       print('Message sent successfully');
     } catch (e) {

@@ -67,7 +67,7 @@ class MessageModel {
     } else if (senderIdData is Map<String, dynamic>) {
       try {
         sender = UserModel.fromJson(senderIdData);
-        senderId = senderIdData['_id'] ?? '';
+        senderId = senderIdData['_id']?.toString() ?? '';
       } catch (e) {
         print('Error parsing sender data: $e');
         print('Sender data: $senderIdData');
@@ -90,6 +90,14 @@ class MessageModel {
       }
     }
 
+    // Handle status
+    Map<String, dynamic> status = {};
+    if (json['status'] != null) {
+      if (json['status'] is Map) {
+        status = Map<String, dynamic>.from(json['status']);
+      }
+    }
+
     return MessageModel(
       id: json['_id']?.toString() ?? '',
       conversationId: json['conversationId']?.toString() ?? '',
@@ -98,7 +106,7 @@ class MessageModel {
       text: json['text']?.toString() ?? '',
       messageType: json['messageType']?.toString() ?? 'text',
       attachments: attachments,
-      status: json['status'] is Map ? json['status'] : {},
+      status: status,
       emojiData: json['emojiData'] is Map ? json['emojiData'] : {'isCustomEmoji': false},
       reactions: (json['reactions'] as List?)
           ?.map((e) => Reaction.fromJson(e as Map<String, dynamic>))
