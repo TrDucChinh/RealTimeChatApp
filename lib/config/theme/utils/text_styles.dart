@@ -54,10 +54,10 @@ class AppTextStyles {
     fontWeight: FontWeight.w600,
   );
 
-  static TextStyle regular_16px = TextStyle(
-    fontFamily: fontFamily,
-    fontSize: 16.sp,
+  static const TextStyle regular_16px = TextStyle(
+    fontSize: 16,
     fontWeight: FontWeight.w400,
+    height: 1.5,
   );
 
   static TextStyle light_16px = TextStyle(
@@ -119,5 +119,12 @@ class AppTextStyles {
     fontFamily: hintFontFamily,
     fontSize: 14.sp,
     fontWeight: FontWeight.w500,
+  );
+
+  static TextStyle regular_14px = TextStyle(
+    fontFamily: fontFamily,
+    fontSize: 14.sp,
+    fontWeight: FontWeight.w400,
+    height: 1.5,
   );
 }

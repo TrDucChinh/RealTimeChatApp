@@ -62,16 +62,16 @@ class AppColors {
   static const green_900 = Color(0xFF005423);
 
   //Neutral
-  static const neutral_50 = Color(0xFFf0f0f3);
-  static const neutral_100 = Color(0xFFd0d1db);
-  static const neutral_200 = Color(0xFFbabac9);
-  static const neutral_300 = Color(0xFF9a9bb1);
-  static const neutral_400 = Color(0xFF8688a1);
-  static const neutral_500 = Color(0xFF686a8a);
-  static const neutral_600 = Color(0xFF5f607e);
-  static const neutral_700 = Color(0xFF4a4b62);
-  static const neutral_800 = Color(0xFF393a4c);
-  static const neutral_900 = Color(0xFF2c2d3a);
+  static const neutral_50 = Color(0xFFF2F2F2);
+  static const neutral_100 = Color(0xFFE6E6E6);
+  static const neutral_200 = Color(0xFFCCCCCC);
+  static const neutral_300 = Color(0xFFB3B3B3);
+  static const neutral_400 = Color(0xFF999999);
+  static const neutral_500 = Color(0xFF808080);
+  static const neutral_600 = Color(0xFF666666);
+  static const neutral_700 = Color(0xFF4D4D4D);
+  static const neutral_800 = Color(0xFF333333);
+  static const neutral_900 = Color(0xFF1A1A1A);
 
   //Other
   static const white = Color(0xFFffffff);
@@ -93,4 +93,7 @@ class AppColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
+
+  static const Color success = Color(0xFF4CAF50);
+  static const Color error = Color(0xFFFF5252);
 }

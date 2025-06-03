@@ -36,5 +36,6 @@
   "confirm_description": "Chúng tôi đã gửi một email\ntới {email} với hướng dẫn\nđể đặt lại mật khẩu của bạn.",
   "back_login": "Quay lại Đăng Nhập",
   "register_title": "Nhập email của bạn",
-  "sign_up": "Đăng Ký"
+  "sign_up": "Đăng Ký",
+  "friend_requests": "Yêu Cầu Kết Bạn"
 }

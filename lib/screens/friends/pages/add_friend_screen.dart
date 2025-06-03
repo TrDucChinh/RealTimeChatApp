@@ -31,7 +31,9 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<AddFriendBloc>().add(LoadUsers());
+    final bloc = context.read<AddFriendBloc>();
+    bloc.add(LoadUsers());
+    bloc.add(LoadFriendRequests());
     _scrollController.addListener(_onScroll);
   }
 
@@ -43,7 +45,8 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       final state = context.read<AddFriendBloc>().state;
       if (state is AddFriendLoaded && !_isLoadingMore) {
         final currentPage = state.currentPage;
@@ -54,6 +57,126 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
         }
       }
     }
+  }
+
+  Widget _buildFriendRequests(List<FriendRequest> requests) {
+    if (requests.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+          child: Text(
+            AppLocalizations.of(context).translate('friend_requests'),
+            style: AppTextStyles.semiBold_18px.copyWith(
+              color: AppColors.neutral_900,
+            ),
+          ),
+        ),
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: EdgeInsets.symmetric(horizontal: 24.w),
+          itemCount: requests.length,
+          separatorBuilder: (context, index) => SizedBox(height: 16.h),
+          itemBuilder: (context, index) {
+            final request = requests[index];
+            print('Building request item: ${request.sender.username}');
+            return Container(
+              padding: EdgeInsets.all(16.r),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(12.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.neutral_200.withOpacity(0.5),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 24.r,
+                    backgroundImage: NetworkImage(request.sender.avatarUrl),
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          request.sender.username,
+                          style: AppTextStyles.medium_16px.copyWith(
+                            color: AppColors.neutral_900,
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          request.sender.email,
+                          style: AppTextStyles.regular_14px.copyWith(
+                            color: AppColors.neutral_500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          print(
+                              'Reject friend request from ${request.sender.username}');
+                          context.read<AddFriendBloc>().add(
+                                RejectFriendRequest(request.id),
+                              );
+                        },
+                        icon: Container(
+                          padding: EdgeInsets.all(8.r),
+                          decoration: BoxDecoration(
+                            color: AppColors.error.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.close,
+                            color: AppColors.error,
+                            size: 20.sp,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                      IconButton(
+                        onPressed: () {
+                          print(
+                              'Acpeting friend request from ${request.sender.username}');
+                          context.read<AddFriendBloc>().add(
+                                AcceptFriendRequest(request.id),
+                              );
+                        },
+                        icon: Container(
+                          padding: EdgeInsets.all(8.r),
+                          decoration: BoxDecoration(
+                            color: AppColors.success.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.check,
+                            color: AppColors.success,
+                            size: 20.sp,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        SizedBox(height: 24.h),
+      ],
+    );
   }
 
   @override
@@ -104,7 +227,8 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
               textAlign: TextAlign.start,
               textAlignVertical: TextAlignVertical.center,
               decoration: InputDecoration(
-                hintText: AppLocalizations.of(context).translate('seach_friend_hint'),
+                hintText:
+                    AppLocalizations.of(context).translate('seach_friend_hint'),
                 hintStyle: AppTextStyles.regular_16px.copyWith(
                   color: AppColors.neutral_200,
                 ),
@@ -138,7 +262,9 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                 ),
               ),
               onSubmitted: (value) {
-                context.read<AddFriendBloc>().add(LoadUsers(searchQuery: value));
+                context
+                    .read<AddFriendBloc>()
+                    .add(LoadUsers(searchQuery: value));
               },
             ),
           ),
@@ -165,7 +291,8 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                           onPressed: () {
                             context.read<AddFriendBloc>().add(LoadUsers());
                           },
-                          child: Text(AppLocalizations.of(context).translate('retry')),
+                          child: Text(
+                              AppLocalizations.of(context).translate('retry')),
                         ),
                       ],
                     ),
@@ -173,48 +300,60 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                 }
 
                 if (state is AddFriendLoaded) {
-                  if (state.users.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset(
-                            AppImages.cardSearch,
-                            width: 200.w,
-                            height: 200.h,
-                          ),
-                          SizedBox(height: 16.h),
-                          Text(
-                            AppLocalizations.of(context).translate('no_users_found'),
-                            style: AppTextStyles.medium_18px.copyWith(
-                              color: AppColors.neutral_500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  return ListView.separated(
+                  return ListView(
                     controller: _scrollController,
-                    padding: EdgeInsets.all(24.r),
-                    itemCount: state.users.length + (_isLoadingMore && state.currentPage < state.totalPages ? 1 : 0),
-                    separatorBuilder: (context, index) => SizedBox(height: 16.h),
-                    itemBuilder: (context, index) {
-                      if (index == state.users.length) {
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: CircularProgressIndicator(),
+                    children: [
+                      _buildFriendRequests(state.friendRequests),
+                      if (state.users.isEmpty)
+                        Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                AppImages.cardSearch,
+                                width: 200.w,
+                                height: 200.h,
+                              ),
+                              SizedBox(height: 16.h),
+                              Text(
+                                AppLocalizations.of(context)
+                                    .translate('no_users_found'),
+                                style: AppTextStyles.medium_18px.copyWith(
+                                  color: AppColors.neutral_500,
+                                ),
+                              ),
+                            ],
                           ),
-                        );
-                      }
-                      return FriendItem(
-                        avatarUrl: state.users[index].avatarUrl,
-                        userName: state.users[index].username,
-                        userEmail: state.users[index].email,
-                      );
-                    },
+                        )
+                      else
+                        ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          padding: EdgeInsets.all(24.r),
+                          itemCount: state.users.length +
+                              (_isLoadingMore &&
+                                      state.currentPage < state.totalPages
+                                  ? 1
+                                  : 0),
+                          separatorBuilder: (context, index) =>
+                              SizedBox(height: 16.h),
+                          itemBuilder: (context, index) {
+                            if (index == state.users.length) {
+                              return const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            }
+                            return FriendItem(
+                              avatarUrl: state.users[index].avatarUrl,
+                              userName: state.users[index].username,
+                              userEmail: state.users[index].email,
+                            );
+                          },
+                        ),
+                    ],
                   );
                 }
 

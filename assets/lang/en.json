@@ -36,5 +36,6 @@
   "confirm_description": "We have sent an email\nto {email} with instructions\nto reset your password.",
   "back_login": "Back to Login",
   "register_title": "Enter your email",
-  "sign_up": "Sign Up"
+  "sign_up": "Sign Up",
+  "friend_requests": "Friend Requests"
 }
