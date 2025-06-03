@@ -29,6 +29,11 @@ class RejectFriendRequest extends AddFriendEvent {
   RejectFriendRequest(this.requestId);
 }
 
+class SendFriendRequest extends AddFriendEvent {
+  final String receiverId;
+  SendFriendRequest(this.receiverId);
+}
+
 // States
 abstract class AddFriendState {}
 
@@ -100,6 +105,7 @@ class AddFriendBloc extends Bloc<AddFriendEvent, AddFriendState> {
     on<LoadFriends>(_onLoadFriends);
     on<AcceptFriendRequest>(_onAcceptFriendRequest);
     on<RejectFriendRequest>(_onRejectFriendRequest);
+    on<SendFriendRequest>(_onSendFriendRequest);
   }
 
   Future<void> _loadFriends() async {
@@ -365,6 +371,31 @@ class AddFriendBloc extends Bloc<AddFriendEvent, AddFriendState> {
     } catch (e) {
       print('Error in _onLoadUsers: $e');
       emit(AddFriendError(e.toString()));
+    }
+  }
+
+  Future<void> _onSendFriendRequest(
+    SendFriendRequest event,
+    Emitter<AddFriendState> emit,
+  ) async {
+    try {
+      print('Sending friend request to: ${event.receiverId}');
+      final response = await _networkService.post(
+        '/users/friend-request',
+        body: {
+          'senderId': _currentUserId,
+          'receiverId': event.receiverId,
+        },
+      );
+      print('Send friend request response status: ${response.statusCode}');
+      print('Send friend request response body: ${response.body}');
+      
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Reload users list to update UI
+        add(LoadUsers());
+      }
+    } catch (e) {
+      print('Error sending friend request: $e');
     }
   }
 }

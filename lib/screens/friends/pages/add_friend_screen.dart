@@ -383,6 +383,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                                   ],
                                 ),
                                 child: FriendItem(
+                                  userId: state.friends[index].id,
                                   avatarUrl: state.friends[index].avatarUrl,
                                   userName: state.friends[index].username,
                                   userEmail: state.friends[index].email,
@@ -463,6 +464,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                                   ],
                                 ),
                                 child: FriendItem(
+                                  userId: state.users[index].id,
                                   avatarUrl: state.users[index].avatarUrl,
                                   userName: state.users[index].username,
                                   userEmail: state.users[index].email,
