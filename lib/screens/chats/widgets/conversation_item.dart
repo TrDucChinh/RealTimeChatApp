@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:intl/intl.dart';
 
 import 'package:chat_app_ttcs/common/widgets/base_image.dart';
 import 'package:chat_app_ttcs/config/theme/utils/text_styles.dart';
 import 'package:chat_app_ttcs/config/theme/utils/app_colors.dart';
+import 'package:chat_app_ttcs/common/helper/emoji_helper.dart';
 
 import '../../../common/helper/helper.dart';
 import '../../../models/conversation_model.dart';
@@ -52,10 +52,15 @@ class ConversationItem extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 8.h),
-                Text(
-                  lastMessage?.text ?? 'No messages yet',
-                  style: AppTextStyles.bold_12px.copyWith(
-                    color: AppColors.neutral_300,
+                RichText(
+                  text: TextSpan(
+                    children: EmojiHelper.buildTextSpans(
+                      lastMessage?.messageType == 'text' 
+                          ? (lastMessage?.text ?? 'No messages yet')
+                          : 'A media message',
+                      AppColors.neutral_300,
+                      fontSize: 12.sp,
+                    ),
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

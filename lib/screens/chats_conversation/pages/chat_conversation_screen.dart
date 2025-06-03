@@ -8,7 +8,6 @@ import 'dart:io';
 
 import '../../../config/theme/utils/app_colors.dart';
 import '../../../models/conversation_model.dart';
-import '../../../models/message_model.dart';
 import '../../../common/helper/helper.dart';
 import '../widgets/app_bar.dart';
 import '../bloc/chat_conversation_bloc.dart';
@@ -471,12 +470,18 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
                         ),
                         Expanded(
                           child: TextField(
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: AppColors.neutral_900,
+                              fontFamily: 'Noto Sans',
+                            ),
                             controller: _messageController,
                             decoration: InputDecoration(
                               hintText: 'Nhập tin nhắn',
                               hintStyle: TextStyle(
                                 fontSize: 14.sp,
                                 color: AppColors.neutral_300,
+                                fontFamily: 'Noto Sans',
                               ),
                               border: InputBorder.none,
                               contentPadding: EdgeInsets.symmetric(

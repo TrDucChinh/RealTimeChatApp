@@ -30,7 +30,6 @@ class _MessageItemState extends State<MessageItem> {
   VideoPlayerController? _videoController;
   bool _isVideoInitialized = false;
   bool _isVideoError = false;
-  bool _isHovered = false;
   String? _selectedReaction;
 
   final List<String> _reactions = ['❤️', '👍', '😂', '😮', '😢', '🙏'];
@@ -323,18 +322,8 @@ class _MessageItemState extends State<MessageItem> {
     print('AddReaction event added to bloc');
   }
 
-  Map<String, int> _getReactionCounts() {
-    final counts = <String, int>{};
-    for (final reaction in widget.message.reactions) {
-      counts[reaction.emoji] = (counts[reaction.emoji] ?? 0) + 1;
-    }
-    return counts;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final reactionCounts = _getReactionCounts();
-    final hasReactions = reactionCounts.isNotEmpty;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -455,13 +444,15 @@ class _MessageItemState extends State<MessageItem> {
                                 ),
                               ),
                             if (widget.message.text.isNotEmpty)
-                              Text(
-                                widget.message.text,
-                                style: AppTextStyles.regular_16px.copyWith(
-                                  color: widget.isSender
-                                      ? Colors.white
-                                      : AppColors.neutral_900,
+                              RichText(
+                                text: TextSpan(
+                                  children: _buildTextSpans(
+                                    widget.message.text,
+                                    widget.isSender ? Colors.white : AppColors.neutral_900,
+                                  ),
                                 ),
+                                textAlign: TextAlign.start,
+                                overflow: TextOverflow.visible,
                               ),
                           ],
                         ),
@@ -677,6 +668,71 @@ class _MessageItemState extends State<MessageItem> {
         ),
       ),
     );
+  }
+
+  bool _containsEmoji(String text) {
+    final emojiRegex = RegExp(
+      r'[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F000}-\u{1F02F}\u{1F0A0}-\u{1F0FF}\u{1F100}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{1F1E0}-\u{1F1FF}]',
+      unicode: true,
+    );
+    return emojiRegex.hasMatch(text);
+  }
+
+  String _getEmojiFontFamily() {
+    if (Platform.isWindows) {
+      return 'Segoe UI Emoji';
+    } else if (Platform.isIOS) {
+      return 'Apple Color Emoji';
+    } else {
+      return 'Noto Color Emoji';
+    }
+  }
+
+  List<TextSpan> _buildTextSpans(String text, Color textColor) {
+    final emojiRegex = RegExp(
+      r'[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F000}-\u{1F02F}\u{1F0A0}-\u{1F0FF}\u{1F100}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{1F1E0}-\u{1F1FF}]',
+      unicode: true,
+    );
+
+    final spans = <TextSpan>[];
+    String currentText = '';
+    
+    for (int i = 0; i < text.length; i++) {
+      final char = text[i];
+      if (emojiRegex.hasMatch(char)) {
+        if (currentText.isNotEmpty) {
+          spans.add(TextSpan(
+            text: currentText,
+            style: AppTextStyles.regular_16px.copyWith(
+              color: textColor,
+              fontFamily: 'Noto Sans',
+            ),
+          ));
+          currentText = '';
+        }
+        spans.add(TextSpan(
+          text: char,
+          style: AppTextStyles.regular_16px.copyWith(
+            color: textColor,
+            fontFamily: _getEmojiFontFamily(),
+          ),
+        ));
+      } else {
+        currentText += char;
+      }
+    }
+    
+    if (currentText.isNotEmpty) {
+      spans.add(TextSpan(
+        text: currentText,
+        style: AppTextStyles.regular_16px.copyWith(
+          color: textColor,
+          fontFamily: 'Noto Sans',
+        ),
+      ));
+    }
+    
+    return spans;
   }
 
   Widget _buildVideoThumbnail(String videoUrl) {

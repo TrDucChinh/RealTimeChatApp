@@ -3,7 +3,6 @@ import 'package:chat_app_ttcs/config/assets/app_images.dart';
 import 'package:chat_app_ttcs/config/localization/app_localizations.dart';
 import 'package:chat_app_ttcs/config/theme/utils/app_colors.dart';
 import 'package:chat_app_ttcs/config/theme/utils/text_styles.dart';
-import 'package:chat_app_ttcs/models/user_model.dart';
 import 'package:chat_app_ttcs/screens/friends/bloc/add_friend_bloc.dart';
 import 'package:chat_app_ttcs/screens/friends/widgets/friend_item.dart';
 import 'package:flutter/material.dart';

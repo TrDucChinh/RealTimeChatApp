@@ -11,7 +11,7 @@ import 'package:go_router/go_router.dart';
 import '../../../config/theme/utils/app_colors.dart';
 import '../bloc/chat_state.dart';
 
-class ChatsScreen extends StatelessWidget {
+class ChatsScreen extends StatefulWidget {
   final String token;
 
   const ChatsScreen({
@@ -20,70 +20,98 @@ class ChatsScreen extends StatelessWidget {
   });
 
   @override
+  State<ChatsScreen> createState() => _ChatsScreenState();
+}
+
+class _ChatsScreenState extends State<ChatsScreen> {
+  late ChatBloc _chatBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _chatBloc = ChatBloc(token: widget.token)..add(LoadConversations());
+  }
+
+  @override
+  void dispose() {
+    _chatBloc.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ChatBloc(token: token)..add(LoadConversations()),
-      child: Scaffold(
-        appBar: ChatAppBar(token: token),
-        backgroundColor: AppColors.white,
-        extendBody: true,
-        extendBodyBehindAppBar: true,
-        body: BlocBuilder<ChatBloc, ChatState>(
-          builder: (context, state) {
-            if (state is ChatLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
+    return BlocProvider.value(
+      value: _chatBloc,
+      child: PopScope(
+        onPopInvoked: (didPop) {
+          if (didPop) {
+            _chatBloc.add(LoadConversations());
+          }
+        },
+        child: Scaffold(
+          appBar: ChatAppBar(token: widget.token),
+          backgroundColor: AppColors.white,
+          extendBody: true,
+          extendBodyBehindAppBar: true,
+          body: BlocBuilder<ChatBloc, ChatState>(
+            builder: (context, state) {
+              if (state is ChatLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-            if (state is ChatError) {
-              final errorMessage = state.message;
-              print('Error: $errorMessage');
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(errorMessage),
-                    SizedBox(height: 16.h),
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<ChatBloc>().add(LoadConversations());
+              if (state is ChatError) {
+                final errorMessage = state.message;
+                print('Error: $errorMessage');
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(errorMessage),
+                      SizedBox(height: 16.h),
+                      ElevatedButton(
+                        onPressed: () {
+                          _chatBloc.add(LoadConversations());
+                        },
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              if (state is ChatLoaded) {
+                return ListView.separated(
+                  padding: const EdgeInsets.only(top: 100),
+                  itemCount: state.conversations.length,
+                  separatorBuilder: (context, index) => SizedBox(height: 24.h),
+                  itemBuilder: (context, index) {
+                    final conversation = state.conversations[index];
+                    return GestureDetector(
+                      onTap: () async {
+                        final conversationId = conversation.id.toString();
+                        await context.pushNamed(
+                          'chatConversation',
+                          pathParameters: {'id': conversationId},
+                          extra: ChatConversationParams(
+                            conversation: conversation,
+                            token: widget.token,
+                          ),
+                        );
+                        // Refresh conversations after returning from chat conversation
+                        _chatBloc.add(LoadConversations());
                       },
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              );
-            }
+                      child: ConversationItem(
+                        conversation: conversation,
+                        currentUserId: Helper.getUserIdFromToken(widget.token),
+                      ),
+                    );
+                  },
+                );
+              }
 
-            if (state is ChatLoaded) {
-              return ListView.separated(
-                padding: const EdgeInsets.only(top: 100),
-                itemCount: state.conversations.length,
-                separatorBuilder: (context, index) => SizedBox(height: 24.h),
-                itemBuilder: (context, index) {
-                  final conversation = state.conversations[index];
-                  return GestureDetector(
-                    onTap: () {
-                      final conversationId = conversation.id.toString();
-                      context.pushNamed(
-                        'chatConversation',
-                        pathParameters: {'id': conversationId},
-                        extra: ChatConversationParams(
-                          conversation: conversation,
-                          token: token,
-                        ),
-                      );
-                    },
-                    child: ConversationItem(
-                      conversation: conversation,
-                      currentUserId: Helper.getUserIdFromToken(token),
-                    ),
-                  );
-                },
-              );
-            }
-
-            return const SizedBox.shrink();
-          },
+              return const SizedBox.shrink();
+            },
+          ),
         ),
       ),
     );
