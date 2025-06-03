@@ -111,10 +111,15 @@ class _MessageItemState extends State<MessageItem> {
 
   void _handleReaction(String reaction) {
     setState(() {
-      _selectedReaction = reaction;
+      if (_selectedReaction == reaction) {
+        _selectedReaction = null;
+      } else {
+        _selectedReaction = reaction;
+      }
     });
+    print('Selected reaction: $_selectedReaction');
     context.read<ChatConversationBloc>().add(
-          AddReaction(widget.message.id, reaction),
+          AddReaction(widget.message.id, _selectedReaction ?? ''),
         );
   }
 
