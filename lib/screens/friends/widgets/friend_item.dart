@@ -8,7 +8,7 @@ import 'package:chat_app_ttcs/config/theme/utils/app_colors.dart';
 import 'package:chat_app_ttcs/config/theme/utils/text_styles.dart';
 import 'package:chat_app_ttcs/common/widgets/base_image.dart';
 
-class FriendItem extends StatelessWidget {
+class FriendItem extends StatefulWidget {
   final String userName;
   final String userEmail;
   final String avatarUrl;
@@ -24,41 +24,50 @@ class FriendItem extends StatelessWidget {
     this.isFriend = false,
   });
 
+  @override
+  State<FriendItem> createState() => _FriendItemState();
+}
+
+class _FriendItemState extends State<FriendItem> {
   void _showSendRequestDialog(BuildContext context) {
+    final bloc = context.read<AddFriendBloc>();
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Send Friend Request',
-          style: AppTextStyles.semiBold_18px,
-        ),
-        content: Text(
-          'Do you want to send a friend request to $userName?',
-          style: AppTextStyles.regular_16px,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: AppTextStyles.medium_16px.copyWith(
-                color: AppColors.neutral_500,
+      builder: (dialogContext) => BlocProvider.value(
+        value: bloc,
+        child: AlertDialog(
+          title: Text(
+            'Send Friend Request',
+            style: AppTextStyles.semiBold_18px,
+          ),
+          content: Text(
+            'Do you want to send a friend request to ${widget.userName}?',
+            style: AppTextStyles.regular_16px,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(
+                'Cancel',
+                style: AppTextStyles.medium_16px.copyWith(
+                  color: AppColors.neutral_500,
+                ),
               ),
             ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.read<AddFriendBloc>().add(SendFriendRequest(userId));
-            },
-            child: Text(
-              'Send',
-              style: AppTextStyles.medium_16px.copyWith(
-                color: AppColors.primaryColor_600,
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                bloc.add(SendFriendRequest(widget.userId));
+              },
+              child: Text(
+                'Send',
+                style: AppTextStyles.medium_16px.copyWith(
+                  color: AppColors.primaryColor_600,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -73,7 +82,7 @@ class FriendItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           BaseCacheImage(
-            url: avatarUrl,
+            url: widget.avatarUrl,
             width: 42.w,
             height: 42.h,
             borderRadius: BorderRadius.circular(25),
@@ -85,14 +94,14 @@ class FriendItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  userName,
+                  widget.userName,
                   style: AppTextStyles.bold_16px.copyWith(
                     color: AppColors.neutral_900,
                   ),
                 ),
                 SizedBox(height: 8.h),
                 Text(
-                  userEmail,
+                  widget.userEmail,
                   style: AppTextStyles.bold_12px.copyWith(
                     color: AppColors.neutral_300,
                   ),
@@ -108,18 +117,18 @@ class FriendItem extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               GestureDetector(
-                onTap: isFriend ? null : () => _showSendRequestDialog(context),
-                child: isFriend
+                onTap: widget.isFriend ? null : () => _showSendRequestDialog(context),
+                child: widget.isFriend
                     ? Icon(
                         Icons.close,
                         color: AppColors.error,
                         size: 24.sp,
                       )
                     : SvgPicture.asset(
-                      AppIcons.addUser,
-                      width: 24.w,
-                      height: 24.h,
-                    ),
+                        AppIcons.addUser,
+                        width: 24.w,
+                        height: 24.h,
+                      ),
               ),
             ],
           ),

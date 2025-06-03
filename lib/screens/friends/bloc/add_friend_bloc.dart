@@ -5,6 +5,8 @@ import 'package:chat_app_ttcs/sample_token.dart';
 import 'package:chat_app_ttcs/common/helper/helper.dart';
 import 'dart:convert';
 
+import '../../../models/friend_request.dart';
+
 // Events
 abstract class AddFriendEvent {}
 
@@ -47,12 +49,14 @@ class AddFriendLoaded extends AddFriendState {
   final List<UserModel> friends;
   final int totalPages;
   final int currentPage;
+  final String? notification;
   AddFriendLoaded(
     this.users, {
     required this.totalPages,
     required this.currentPage,
     this.friendRequests = const [],
     this.friends = const [],
+    this.notification,
   });
 }
 
@@ -61,29 +65,6 @@ class AddFriendError extends AddFriendState {
   AddFriendError(this.message);
 }
 
-// Models
-class FriendRequest {
-  final String id;
-  final UserModel sender;
-  final String status;
-  final DateTime createdAt;
-
-  FriendRequest({
-    required this.id,
-    required this.sender,
-    required this.status,
-    required this.createdAt,
-  });
-
-  factory FriendRequest.fromJson(Map<String, dynamic> json) {
-    return FriendRequest(
-      id: json['_id'] as String,
-      sender: UserModel.fromJson(json['sender']),
-      status: json['status'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-    );
-  }
-}
 
 // Bloc
 class AddFriendBloc extends Bloc<AddFriendEvent, AddFriendState> {
@@ -175,7 +156,8 @@ class AddFriendBloc extends Bloc<AddFriendEvent, AddFriendState> {
             currentPage: currentState.currentPage,
             friendRequests: requests,
             friends: currentState.friends,
-          ));
+            notification: null,
+          ),);
         } else {
           print('Current state is not AddFriendLoaded: ${state.runtimeType}');
         }
@@ -202,12 +184,34 @@ class AddFriendBloc extends Bloc<AddFriendEvent, AddFriendState> {
       print('Accept response body: ${response.body}');
       
       if (response.statusCode == 200) {
+        if (state is AddFriendLoaded) {
+          final currentState = state as AddFriendLoaded;
+          emit(AddFriendLoaded(
+            currentState.users,
+            totalPages: currentState.totalPages,
+            currentPage: currentState.currentPage,
+            friendRequests: currentState.friendRequests,
+            friends: currentState.friends,
+            notification: 'Friend request accepted successfully',
+          ),);
+        }
         add(LoadFriendRequests());
         add(LoadUsers());
         add(LoadFriends());
       }
     } catch (e) {
       print('Error accepting friend request: $e');
+      if (state is AddFriendLoaded) {
+        final currentState = state as AddFriendLoaded;
+        emit(AddFriendLoaded(
+          currentState.users,
+          totalPages: currentState.totalPages,
+          currentPage: currentState.currentPage,
+          friendRequests: currentState.friendRequests,
+          friends: currentState.friends,
+          notification: 'Failed to accept friend request',
+        ),);
+      }
     }
   }
 
@@ -227,11 +231,33 @@ class AddFriendBloc extends Bloc<AddFriendEvent, AddFriendState> {
       print('Reject response body: ${response.body}');
       
       if (response.statusCode == 200) {
+        if (state is AddFriendLoaded) {
+          final currentState = state as AddFriendLoaded;
+          emit(AddFriendLoaded(
+            currentState.users,
+            totalPages: currentState.totalPages,
+            currentPage: currentState.currentPage,
+            friendRequests: currentState.friendRequests,
+            friends: currentState.friends,
+            notification: 'Friend request rejected successfully',
+          ),);
+        }
         add(LoadFriendRequests());
         add(LoadFriends());
       }
     } catch (e) {
       print('Error rejecting friend request: $e');
+      if (state is AddFriendLoaded) {
+        final currentState = state as AddFriendLoaded;
+        emit(AddFriendLoaded(
+          currentState.users,
+          totalPages: currentState.totalPages,
+          currentPage: currentState.currentPage,
+          friendRequests: currentState.friendRequests,
+          friends: currentState.friends,
+          notification: 'Failed to reject friend request',
+        ),);
+      }
     }
   }
 
@@ -272,14 +298,16 @@ class AddFriendBloc extends Bloc<AddFriendEvent, AddFriendState> {
             currentPage: currentState.currentPage,
             friendRequests: currentState.friendRequests,
             friends: friends,
-          ));
+            notification: null,
+          ),);
         } else {
           emit(AddFriendLoaded(
             [],
             totalPages: 1,
             currentPage: 1,
             friends: friends,
-          ));
+            notification: null,
+          ),);
         }
       }
     } catch (e) {
@@ -339,6 +367,7 @@ class AddFriendBloc extends Bloc<AddFriendEvent, AddFriendState> {
                 currentPage: pagination['page'] as int,
                 friendRequests: [],
                 friends: [],
+                notification: null,
               ),
             );
             print('Loading friend requests after initial users load');
@@ -354,6 +383,7 @@ class AddFriendBloc extends Bloc<AddFriendEvent, AddFriendState> {
                 currentPage: pagination['page'] as int,
                 friendRequests: currentState.friendRequests,
                 friends: currentState.friends,
+                notification: null,
               ),
             );
           }
@@ -391,11 +421,46 @@ class AddFriendBloc extends Bloc<AddFriendEvent, AddFriendState> {
       print('Send friend request response body: ${response.body}');
       
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // Reload users list to update UI
-        add(LoadUsers());
+        // Get current state
+        if (state is AddFriendLoaded) {
+          final currentState = state as AddFriendLoaded;
+          // Remove the user from the list since we sent them a request
+          final updatedUsers = currentState.users.where((user) => user.id != event.receiverId).toList();
+          
+          emit(AddFriendLoaded(
+            updatedUsers,
+            totalPages: currentState.totalPages,
+            currentPage: currentState.currentPage,
+            friendRequests: currentState.friendRequests,
+            friends: currentState.friends,
+            notification: 'Friend request sent successfully',
+          ),);
+        }
+      } else if (response.statusCode == 400) {
+        final errorData = json.decode(response.body);
+        final errorMessage = errorData['message'] ?? 'Failed to send friend request';
+        // Emit error state but keep current state
+        if (state is AddFriendLoaded) {
+          final currentState = state as AddFriendLoaded;
+          emit(AddFriendLoaded(
+            currentState.users,
+            totalPages: currentState.totalPages,
+            currentPage: currentState.currentPage,
+            friendRequests: currentState.friendRequests,
+            friends: currentState.friends,
+            notification: errorMessage,
+          ),);
+        } else {
+          emit(AddFriendError(errorMessage));
+        }
+      } else {
+        final errorData = json.decode(response.body);
+        final errorMessage = errorData['message'] ?? 'Failed to send friend request';
+        emit(AddFriendError(errorMessage));
       }
     } catch (e) {
       print('Error sending friend request: $e');
+      emit(AddFriendError('Failed to send friend request: ${e.toString()}'));
     }
   }
 }

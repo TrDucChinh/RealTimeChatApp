@@ -95,394 +95,443 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.only(
-              left: 24.w,
-              right: 24.w,
-              top: 24.h,
-            ),
-            child: TextField(
-              controller: _searchController,
-              textAlign: TextAlign.start,
-              textAlignVertical: TextAlignVertical.center,
-              decoration: InputDecoration(
-                hintText:
-                    AppLocalizations.of(context).translate('seach_friend_hint'),
-                hintStyle: AppTextStyles.regular_16px.copyWith(
-                  color: AppColors.neutral_200,
-                ),
-                filled: true,
-                fillColor: AppColors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(color: AppColors.neutral_100),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(color: AppColors.neutral_100),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                  borderSide: BorderSide(color: AppColors.neutral_100),
-                ),
-                contentPadding: EdgeInsets.symmetric(
-                  vertical: 18.5.h,
-                  horizontal: 18.5.w,
-                ),
-                isDense: true,
-                prefixIcon: Padding(
-                  padding: EdgeInsets.only(left: 10.w, right: 10.w),
-                  child: SvgPicture.asset(
-                    AppIcons.search,
-                    height: 24.h,
-                    width: 24.w,
-                    color: AppColors.neutral_300,
+      body: BlocListener<AddFriendBloc, AddFriendState>(
+        listener: (context, state) {
+          if (state is AddFriendLoaded && state.notification != null) {
+            final isError = state.notification!.toLowerCase().contains('failed') || 
+                          state.notification!.toLowerCase().contains('error') || state.notification!.toLowerCase().contains('exists') ;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  state.notification!,
+                  style: AppTextStyles.regular_14px.copyWith(
+                    color: AppColors.white,
                   ),
                 ),
+                backgroundColor: isError ? AppColors.error : AppColors.success,
+                duration: const Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+                margin: EdgeInsets.all(16.r),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
               ),
-              onSubmitted: (value) {
-                context
-                    .read<AddFriendBloc>()
-                    .add(LoadUsers(searchQuery: value));
-              },
-            ),
-          ),
-          Expanded(
-            child: BlocBuilder<AddFriendBloc, AddFriendState>(
-              builder: (context, state) {
-                if (state is AddFriendLoading && state is! AddFriendLoaded) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (state is AddFriendError) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          state.message,
-                          style: AppTextStyles.regular_16px.copyWith(
-                            color: AppColors.neutral_900,
-                          ),
-                        ),
-                        SizedBox(height: 16.h),
-                        ElevatedButton(
-                          onPressed: () {
-                            context.read<AddFriendBloc>().add(LoadUsers());
-                          },
-                          child: Text(
-                              AppLocalizations.of(context).translate('retry')),
-                        ),
-                      ],
+            );
+          } else if (state is AddFriendError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  state.message,
+                  style: AppTextStyles.regular_14px.copyWith(
+                    color: AppColors.white,
+                  ),
+                ),
+                backgroundColor: AppColors.error,
+                duration: const Duration(seconds: 2),
+                behavior: SnackBarBehavior.floating,
+                margin: EdgeInsets.all(16.r),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+              ),
+            );
+          }
+        },
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.only(
+                left: 24.w,
+                right: 24.w,
+                top: 24.h,
+              ),
+              child: TextField(
+                controller: _searchController,
+                textAlign: TextAlign.start,
+                textAlignVertical: TextAlignVertical.center,
+                decoration: InputDecoration(
+                  hintText:
+                      AppLocalizations.of(context).translate('seach_friend_hint'),
+                  hintStyle: AppTextStyles.regular_16px.copyWith(
+                    color: AppColors.neutral_200,
+                  ),
+                  filled: true,
+                  fillColor: AppColors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    borderSide: BorderSide(color: AppColors.neutral_100),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    borderSide: BorderSide(color: AppColors.neutral_100),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                    borderSide: BorderSide(color: AppColors.neutral_100),
+                  ),
+                  contentPadding: EdgeInsets.symmetric(
+                    vertical: 18.5.h,
+                    horizontal: 18.5.w,
+                  ),
+                  isDense: true,
+                  prefixIcon: Padding(
+                    padding: EdgeInsets.only(left: 10.w, right: 10.w),
+                    child: SvgPicture.asset(
+                      AppIcons.search,
+                      height: 24.h,
+                      width: 24.w,
+                      color: AppColors.neutral_300,
                     ),
-                  );
-                }
+                  ),
+                ),
+                onSubmitted: (value) {
+                  context
+                      .read<AddFriendBloc>()
+                      .add(LoadUsers(searchQuery: value));
+                },
+              ),
+            ),
+            Expanded(
+              child: BlocBuilder<AddFriendBloc, AddFriendState>(
+                builder: (context, state) {
+                  if (state is AddFriendLoading && state is! AddFriendLoaded) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                if (state is AddFriendLoaded) {
-                  return SingleChildScrollView(
-                    controller: _scrollController,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Friend Requests Section
-                        if (state.friendRequests.isNotEmpty) ...[
+                  if (state is AddFriendError) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            state.message,
+                            style: AppTextStyles.regular_16px.copyWith(
+                              color: AppColors.neutral_900,
+                            ),
+                          ),
+                          SizedBox(height: 16.h),
+                          ElevatedButton(
+                            onPressed: () {
+                              context.read<AddFriendBloc>().add(LoadUsers());
+                            },
+                            child: Text(
+                                AppLocalizations.of(context).translate('retry')),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  if (state is AddFriendLoaded) {
+                    // Keep track of previous state to maintain friends list
+                    final previousState = context.read<AddFriendBloc>().state;
+                    final friends = previousState is AddFriendLoaded 
+                        ? previousState.friends 
+                        : state.friends;
+
+                    return SingleChildScrollView(
+                      controller: _scrollController,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Friend Requests Section
+                          if (state.friendRequests.isNotEmpty) ...[
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 24.w, vertical: 16.h),
+                              child: Text(
+                                AppLocalizations.of(context)
+                                    .translate('friend_requests'),
+                                style: AppTextStyles.semiBold_18px.copyWith(
+                                  color: AppColors.neutral_900,
+                                ),
+                              ),
+                            ),
+                            ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              padding: EdgeInsets.symmetric(horizontal: 24.w),
+                              itemCount: state.friendRequests.length,
+                              separatorBuilder: (context, index) =>
+                                  SizedBox(height: 16.h),
+                              itemBuilder: (context, index) {
+                                final request = state.friendRequests[index];
+                                return Container(
+                                  padding: EdgeInsets.all(16.r),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.white,
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.neutral_200
+                                            .withOpacity(0.5),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 24.r,
+                                        backgroundImage: NetworkImage(
+                                            request.sender.avatarUrl),
+                                      ),
+                                      SizedBox(width: 12.w),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              request.sender.username,
+                                              style: AppTextStyles.medium_16px
+                                                  .copyWith(
+                                                color: AppColors.neutral_900,
+                                              ),
+                                            ),
+                                            SizedBox(height: 4.h),
+                                            Text(
+                                              request.sender.email,
+                                              style: AppTextStyles.regular_14px
+                                                  .copyWith(
+                                                color: AppColors.neutral_500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Row(
+                                        children: [
+                                          IconButton(
+                                            onPressed: () {
+                                              context.read<AddFriendBloc>().add(
+                                                    RejectFriendRequest(
+                                                        request.id),
+                                                  );
+                                            },
+                                            icon: Container(
+                                              padding: EdgeInsets.all(8.r),
+                                              decoration: BoxDecoration(
+                                                color: AppColors.error
+                                                    .withOpacity(0.1),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Icon(
+                                                Icons.close,
+                                                color: AppColors.error,
+                                                size: 20.sp,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(width: 8.w),
+                                          IconButton(
+                                            onPressed: () {
+                                              context.read<AddFriendBloc>().add(
+                                                    AcceptFriendRequest(
+                                                        request.id),
+                                                  );
+                                            },
+                                            icon: Container(
+                                              padding: EdgeInsets.all(8.r),
+                                              decoration: BoxDecoration(
+                                                color: AppColors.success
+                                                    .withOpacity(0.1),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Icon(
+                                                Icons.check,
+                                                color: AppColors.success,
+                                                size: 20.sp,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                            SizedBox(height: 24.h),
+                          ],
+
+                          // Friends List Section
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 24.w, vertical: 16.h),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  AppLocalizations.of(context)
+                                      .translate('my_friends'),
+                                  style: AppTextStyles.semiBold_18px.copyWith(
+                                    color: AppColors.neutral_900,
+                                  ),
+                                ),
+                                Text(
+                                  '${friends.length} ${AppLocalizations.of(context).translate('friends')}',
+                                  style: AppTextStyles.regular_14px.copyWith(
+                                    color: AppColors.neutral_500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (state is AddFriendLoading && friends.isEmpty)
+                            const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: CircularProgressIndicator(),
+                              ),
+                            )
+                          else if (friends.isEmpty)
+                            Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    AppImages.cardSearch,
+                                    width: 200.w,
+                                    height: 200.h,
+                                  ),
+                                  SizedBox(height: 16.h),
+                                  Text(
+                                    AppLocalizations.of(context)
+                                        .translate('no_friends_found'),
+                                    style: AppTextStyles.medium_18px.copyWith(
+                                      color: AppColors.neutral_500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              padding: EdgeInsets.symmetric(horizontal: 24.w),
+                              itemCount: friends.length,
+                              separatorBuilder: (context, index) =>
+                                  SizedBox(height: 16.h),
+                              itemBuilder: (context, index) {
+                                return Container(
+                                  padding: EdgeInsets.all(16.r),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.white,
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.neutral_200
+                                            .withOpacity(0.5),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: FriendItem(
+                                    userId: friends[index].id,
+                                    avatarUrl: friends[index].avatarUrl,
+                                    userName: friends[index].username,
+                                    userEmail: friends[index].email,
+                                    isFriend: true,
+                                  ),
+                                );
+                              },
+                            ),
+                          SizedBox(height: 24.h),
+
+                          // Users List Section
                           Padding(
                             padding: EdgeInsets.symmetric(
                                 horizontal: 24.w, vertical: 16.h),
                             child: Text(
                               AppLocalizations.of(context)
-                                  .translate('friend_requests'),
+                                  .translate('suggested_friends'),
                               style: AppTextStyles.semiBold_18px.copyWith(
                                 color: AppColors.neutral_900,
                               ),
                             ),
                           ),
-                          ListView.separated(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            padding: EdgeInsets.symmetric(horizontal: 24.w),
-                            itemCount: state.friendRequests.length,
-                            separatorBuilder: (context, index) =>
-                                SizedBox(height: 16.h),
-                            itemBuilder: (context, index) {
-                              final request = state.friendRequests[index];
-                              return Container(
-                                padding: EdgeInsets.all(16.r),
-                                decoration: BoxDecoration(
-                                  color: AppColors.white,
-                                  borderRadius: BorderRadius.circular(12.r),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppColors.neutral_200
-                                          .withOpacity(0.5),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
+                          if (state.users.isEmpty)
+                            Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    AppImages.cardSearch,
+                                    width: 200.w,
+                                    height: 200.h,
+                                  ),
+                                  SizedBox(height: 16.h),
+                                  Text(
+                                    AppLocalizations.of(context)
+                                        .translate('no_users_found'),
+                                    style: AppTextStyles.medium_18px.copyWith(
+                                      color: AppColors.neutral_500,
                                     ),
-                                  ],
-                                ),
-                                child: Row(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 24.r,
-                                      backgroundImage: NetworkImage(
-                                          request.sender.avatarUrl),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            ListView.separated(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              padding: EdgeInsets.symmetric(horizontal: 24.w),
+                              itemCount: state.users.length +
+                                  (_isLoadingMore &&
+                                          state.currentPage < state.totalPages
+                                      ? 1
+                                      : 0),
+                              separatorBuilder: (context, index) =>
+                                  SizedBox(height: 16.h),
+                              itemBuilder: (context, index) {
+                                if (index == state.users.length) {
+                                  return const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(16.0),
+                                      child: CircularProgressIndicator(),
                                     ),
-                                    SizedBox(width: 12.w),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            request.sender.username,
-                                            style: AppTextStyles.medium_16px
-                                                .copyWith(
-                                              color: AppColors.neutral_900,
-                                            ),
-                                          ),
-                                          SizedBox(height: 4.h),
-                                          Text(
-                                            request.sender.email,
-                                            style: AppTextStyles.regular_14px
-                                                .copyWith(
-                                              color: AppColors.neutral_500,
-                                            ),
-                                          ),
-                                        ],
+                                  );
+                                }
+
+                                return Container(
+                                  padding: EdgeInsets.all(16.r),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.white,
+                                    borderRadius: BorderRadius.circular(12.r),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.neutral_200
+                                            .withOpacity(0.5),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
                                       ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        IconButton(
-                                          onPressed: () {
-                                            context.read<AddFriendBloc>().add(
-                                                  RejectFriendRequest(
-                                                      request.id),
-                                                );
-                                          },
-                                          icon: Container(
-                                            padding: EdgeInsets.all(8.r),
-                                            decoration: BoxDecoration(
-                                              color: AppColors.error
-                                                  .withOpacity(0.1),
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: Icon(
-                                              Icons.close,
-                                              color: AppColors.error,
-                                              size: 20.sp,
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(width: 8.w),
-                                        IconButton(
-                                          onPressed: () {
-                                            context.read<AddFriendBloc>().add(
-                                                  AcceptFriendRequest(
-                                                      request.id),
-                                                );
-                                          },
-                                          icon: Container(
-                                            padding: EdgeInsets.all(8.r),
-                                            decoration: BoxDecoration(
-                                              color: AppColors.success
-                                                  .withOpacity(0.1),
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: Icon(
-                                              Icons.check,
-                                              color: AppColors.success,
-                                              size: 20.sp,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                          SizedBox(height: 24.h),
-                        ],
-
-                        // Friends List Section
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 24.w, vertical: 16.h),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context)
-                                    .translate('my_friends'),
-                                style: AppTextStyles.semiBold_18px.copyWith(
-                                  color: AppColors.neutral_900,
-                                ),
-                              ),
-                              Text(
-                                '${state.friends.length} ${AppLocalizations.of(context).translate('friends')}',
-                                style: AppTextStyles.regular_14px.copyWith(
-                                  color: AppColors.neutral_500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (state is AddFriendLoading && state.friends.isEmpty)
-                          const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(16.0),
-                              child: CircularProgressIndicator(),
-                            ),
-                          )
-                        else if (state.friends.isEmpty)
-                          Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  AppImages.cardSearch,
-                                  width: 200.w,
-                                  height: 200.h,
-                                ),
-                                SizedBox(height: 16.h),
-                                Text(
-                                  AppLocalizations.of(context)
-                                      .translate('no_friends_found'),
-                                  style: AppTextStyles.medium_18px.copyWith(
-                                    color: AppColors.neutral_500,
+                                    ],
                                   ),
-                                ),
-                              ],
-                            ),
-                          )
-                        else
-                          ListView.separated(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            padding: EdgeInsets.symmetric(horizontal: 24.w),
-                            itemCount: state.friends.length,
-                            separatorBuilder: (context, index) =>
-                                SizedBox(height: 16.h),
-                            itemBuilder: (context, index) {
-                              return Container(
-                                padding: EdgeInsets.all(16.r),
-                                decoration: BoxDecoration(
-                                  color: AppColors.white,
-                                  borderRadius: BorderRadius.circular(12.r),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppColors.neutral_200
-                                          .withOpacity(0.5),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: FriendItem(
-                                  userId: state.friends[index].id,
-                                  avatarUrl: state.friends[index].avatarUrl,
-                                  userName: state.friends[index].username,
-                                  userEmail: state.friends[index].email,
-                                  isFriend: true,
-                                ),
-                              );
-                            },
-                          ),
-                        SizedBox(height: 24.h),
-
-                        // Users List Section
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 24.w, vertical: 16.h),
-                          child: Text(
-                            AppLocalizations.of(context)
-                                .translate('suggested_friends'),
-                            style: AppTextStyles.semiBold_18px.copyWith(
-                              color: AppColors.neutral_900,
-                            ),
-                          ),
-                        ),
-                        if (state.users.isEmpty)
-                          Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  AppImages.cardSearch,
-                                  width: 200.w,
-                                  height: 200.h,
-                                ),
-                                SizedBox(height: 16.h),
-                                Text(
-                                  AppLocalizations.of(context)
-                                      .translate('no_users_found'),
-                                  style: AppTextStyles.medium_18px.copyWith(
-                                    color: AppColors.neutral_500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        else
-                          ListView.separated(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            padding: EdgeInsets.symmetric(horizontal: 24.w),
-                            itemCount: state.users.length +
-                                (_isLoadingMore &&
-                                        state.currentPage < state.totalPages
-                                    ? 1
-                                    : 0),
-                            separatorBuilder: (context, index) =>
-                                SizedBox(height: 16.h),
-                            itemBuilder: (context, index) {
-                              if (index == state.users.length) {
-                                return const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: CircularProgressIndicator(),
+                                  child: FriendItem(
+                                    userId: state.users[index].id,
+                                    avatarUrl: state.users[index].avatarUrl,
+                                    userName: state.users[index].username,
+                                    userEmail: state.users[index].email,
+                                    isFriend: false,
                                   ),
                                 );
-                              }
+                              },
+                            ),
+                        ],
+                      ),
+                    );
+                  }
 
-                              return Container(
-                                padding: EdgeInsets.all(16.r),
-                                decoration: BoxDecoration(
-                                  color: AppColors.white,
-                                  borderRadius: BorderRadius.circular(12.r),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppColors.neutral_200
-                                          .withOpacity(0.5),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: FriendItem(
-                                  userId: state.users[index].id,
-                                  avatarUrl: state.users[index].avatarUrl,
-                                  userName: state.users[index].username,
-                                  userEmail: state.users[index].email,
-                                  isFriend: false,
-                                ),
-                              );
-                            },
-                          ),
-                      ],
-                    ),
-                  );
-                }
-
-                return const SizedBox.shrink();
-              },
+                  return const SizedBox.shrink();
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
