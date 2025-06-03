@@ -418,40 +418,33 @@ class ChatConversationBloc
     AddReaction event,
     Emitter<ChatConversationState> emit,
   ) async {
-    print('Processing AddReaction event');
-    print('Message ID: ${event.messageId}');
-    print('Emoji: ${event.emoji}');
+
     
     if (state is ChatConversationLoaded) {
       final currentState = state as ChatConversationLoaded;
-      print('Current state is ChatConversationLoaded');
 
       try {
-        print('Sending reaction to server');
-        final response = await _networkService.post(
-          '/messages/${event.messageId}/react',
+    
+        final response = await _networkService.put(
+          '/message/${event.messageId}/react',
           body: {
             'emoji': event.emoji,
           },
         );
-        print('Server response status: ${response.statusCode}');
-        print('Server response body: ${response.body}');
+  
 
         if (response.statusCode == 200 || response.statusCode == 201) {
           final responseData = jsonDecode(response.body);
-          print('Parsed response data: $responseData');
+
           final updatedMessage = MessageModel.fromJson(responseData);
-          print('Created updated message: ${updatedMessage.toJson()}');
 
           final updatedMessages = currentState.messages.map((message) {
             if (message.id == event.messageId) {
-              print('Updating message with ID: ${message.id}');
               return updatedMessage;
             }
             return message;
           }).toList();
 
-          print('Emitting new state with updated messages');
           emit(ChatConversationLoaded(updatedMessages, currentUserId: _currentUserId));
           print('New state emitted successfully');
         } else {
