@@ -124,7 +124,7 @@ class _ChatConversationContentState extends State<_ChatConversationContent> {
             _selectedVideo = null; // Clear video when images are selected
           });
           print('Selected ${selectedImages.length} images from gallery:');
-          for (var image in selectedImages) {
+          for (final image in selectedImages) {
             print('Gallery image path: ${image.path}');
           }
         }

@@ -102,7 +102,7 @@ class ChatConversationBloc
       } else {
         print('API Error Response: ${response.body}');
         emit(ChatConversationError(
-            'Failed to load messages: ${response.statusCode}'));
+            'Failed to load messages: ${response.statusCode}',),);
       }
     } catch (e, stackTrace) {
       print('Error in _onLoadMessages: $e');
@@ -351,7 +351,7 @@ class ChatConversationBloc
               ..add(savedMessage);
             emit(
               ChatConversationLoaded(updatedMessages,
-                  currentUserId: _currentUserId),
+                  currentUserId: _currentUserId,),
             );
           } else {
             emit(ChatConversationError('Failed to send video message'));
@@ -379,7 +379,7 @@ class ChatConversationBloc
       if (state is ChatConversationLoaded) {
         final currentState = state as ChatConversationLoaded;
         print(
-            'Current state is ChatConversationLoaded with ${currentState.messages.length} messages');
+            'Current state is ChatConversationLoaded with ${currentState.messages.length} messages',);
 
         final newMessage = MessageModel.fromJson(event.message);
         print('Parsed new message: ${newMessage.toJson()}');
@@ -399,7 +399,7 @@ class ChatConversationBloc
             ..add(newMessage);
           print('Emitting new state with ${updatedMessages.length} messages');
           emit(ChatConversationLoaded(updatedMessages,
-              currentUserId: _currentUserId));
+              currentUserId: _currentUserId,),);
           print('New state emitted successfully');
         } else {
           print('Message already exists, skipping');

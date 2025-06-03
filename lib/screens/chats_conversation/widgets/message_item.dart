@@ -1,3 +1,4 @@
+import 'package:chat_app_ttcs/common/helper/emoji_helper.dart';
 import 'package:chat_app_ttcs/common/helper/helper.dart';
 import 'package:chat_app_ttcs/common/widgets/base_image.dart';
 import 'package:chat_app_ttcs/config/theme/utils/app_colors.dart';
@@ -324,7 +325,6 @@ class _MessageItemState extends State<MessageItem> {
 
   @override
   Widget build(BuildContext context) {
-
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Row(
@@ -361,8 +361,10 @@ class _MessageItemState extends State<MessageItem> {
                           borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(12.r),
                             topRight: Radius.circular(12.r),
-                            bottomLeft: Radius.circular(widget.isSender ? 12.r : 0),
-                            bottomRight: Radius.circular(widget.isSender ? 0 : 12.r),
+                            bottomLeft:
+                                Radius.circular(widget.isSender ? 12.r : 0),
+                            bottomRight:
+                                Radius.circular(widget.isSender ? 0 : 12.r),
                           ),
                         ),
                         child: Column(
@@ -433,11 +435,15 @@ class _MessageItemState extends State<MessageItem> {
                                   itemBuilder: (context, index) {
                                     return GestureDetector(
                                       onTap: () => _showFullImage(
-                                          context, widget.message.attachments[index]),
+                                        context,
+                                        widget.message.attachments[index],
+                                      ),
                                       child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(8.r),
+                                        borderRadius:
+                                            BorderRadius.circular(8.r),
                                         child: _buildImage(
-                                            widget.message.attachments[index]),
+                                          widget.message.attachments[index],
+                                        ),
                                       ),
                                     );
                                   },
@@ -448,7 +454,9 @@ class _MessageItemState extends State<MessageItem> {
                                 text: TextSpan(
                                   children: _buildTextSpans(
                                     widget.message.text,
-                                    widget.isSender ? Colors.white : AppColors.neutral_900,
+                                    widget.isSender
+                                        ? Colors.white
+                                        : AppColors.neutral_900,
                                   ),
                                 ),
                                 textAlign: TextAlign.start,
@@ -509,11 +517,15 @@ class _MessageItemState extends State<MessageItem> {
   void _showReactionMenu(BuildContext context) {
     print('Showing reaction menu');
     final RenderBox button = context.findRenderObject() as RenderBox;
-    final RenderBox overlay = Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
+    final RenderBox overlay =
+        Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
     final RelativeRect position = RelativeRect.fromRect(
       Rect.fromPoints(
         button.localToGlobal(Offset.zero, ancestor: overlay),
-        button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
+        button.localToGlobal(
+          button.size.bottomRight(Offset.zero),
+          ancestor: overlay,
+        ),
       ),
       Offset.zero & overlay.size,
     );
@@ -670,24 +682,6 @@ class _MessageItemState extends State<MessageItem> {
     );
   }
 
-  bool _containsEmoji(String text) {
-    final emojiRegex = RegExp(
-      r'[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F000}-\u{1F02F}\u{1F0A0}-\u{1F0FF}\u{1F100}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{1F1E0}-\u{1F1FF}]',
-      unicode: true,
-    );
-    return emojiRegex.hasMatch(text);
-  }
-
-  String _getEmojiFontFamily() {
-    if (Platform.isWindows) {
-      return 'Segoe UI Emoji';
-    } else if (Platform.isIOS) {
-      return 'Apple Color Emoji';
-    } else {
-      return 'Noto Color Emoji';
-    }
-  }
-
   List<TextSpan> _buildTextSpans(String text, Color textColor) {
     final emojiRegex = RegExp(
       r'[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F000}-\u{1F02F}\u{1F0A0}-\u{1F0FF}\u{1F100}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{1F1E0}-\u{1F1FF}]',
@@ -696,42 +690,48 @@ class _MessageItemState extends State<MessageItem> {
 
     final spans = <TextSpan>[];
     String currentText = '';
-    
+
     for (int i = 0; i < text.length; i++) {
       final char = text[i];
       if (emojiRegex.hasMatch(char)) {
         if (currentText.isNotEmpty) {
-          spans.add(TextSpan(
-            text: currentText,
-            style: AppTextStyles.regular_16px.copyWith(
-              color: textColor,
-              fontFamily: 'Noto Sans',
+          spans.add(
+            TextSpan(
+              text: currentText,
+              style: AppTextStyles.regular_16px.copyWith(
+                color: textColor,
+                fontFamily: 'Noto Sans',
+              ),
             ),
-          ));
+          );
           currentText = '';
         }
-        spans.add(TextSpan(
-          text: char,
-          style: AppTextStyles.regular_16px.copyWith(
-            color: textColor,
-            fontFamily: _getEmojiFontFamily(),
+        spans.add(
+          TextSpan(
+            text: char,
+            style: AppTextStyles.regular_16px.copyWith(
+              color: textColor,
+              fontFamily: EmojiHelper.getEmojiFontFamily(),
+            ),
           ),
-        ));
+        );
       } else {
         currentText += char;
       }
     }
-    
+
     if (currentText.isNotEmpty) {
-      spans.add(TextSpan(
-        text: currentText,
-        style: AppTextStyles.regular_16px.copyWith(
-          color: textColor,
-          fontFamily: 'Noto Sans',
+      spans.add(
+        TextSpan(
+          text: currentText,
+          style: AppTextStyles.regular_16px.copyWith(
+            color: textColor,
+            fontFamily: 'Noto Sans',
+          ),
         ),
-      ));
+      );
     }
-    
+
     return spans;
   }
 

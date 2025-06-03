@@ -214,7 +214,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                               context.read<AddFriendBloc>().add(LoadUsers());
                             },
                             child: Text(
-                                AppLocalizations.of(context).translate('retry')),
+                                AppLocalizations.of(context).translate('retry'),),
                           ),
                         ],
                       ),
@@ -237,7 +237,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                           if (state.friendRequests.isNotEmpty) ...[
                             Padding(
                               padding: EdgeInsets.symmetric(
-                                  horizontal: 24.w, vertical: 16.h),
+                                  horizontal: 24.w, vertical: 16.h,),
                               child: Text(
                                 AppLocalizations.of(context)
                                     .translate('friend_requests'),
@@ -274,7 +274,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                                       CircleAvatar(
                                         radius: 24.r,
                                         backgroundImage: NetworkImage(
-                                            request.sender.avatarUrl),
+                                            request.sender.avatarUrl,),
                                       ),
                                       SizedBox(width: 12.w),
                                       Expanded(
@@ -306,7 +306,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                                             onPressed: () {
                                               context.read<AddFriendBloc>().add(
                                                     RejectFriendRequest(
-                                                        request.id),
+                                                        request.id,),
                                                   );
                                             },
                                             icon: Container(
@@ -328,7 +328,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                                             onPressed: () {
                                               context.read<AddFriendBloc>().add(
                                                     AcceptFriendRequest(
-                                                        request.id),
+                                                        request.id,),
                                                   );
                                             },
                                             icon: Container(
@@ -358,7 +358,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                           // Friends List Section
                           Padding(
                             padding: EdgeInsets.symmetric(
-                                horizontal: 24.w, vertical: 16.h),
+                                horizontal: 24.w, vertical: 16.h,),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -444,7 +444,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                           // Users List Section
                           Padding(
                             padding: EdgeInsets.symmetric(
-                                horizontal: 24.w, vertical: 16.h),
+                                horizontal: 24.w, vertical: 16.h,),
                             child: Text(
                               AppLocalizations.of(context)
                                   .translate('suggested_friends'),

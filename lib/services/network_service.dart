@@ -72,7 +72,7 @@ class NetworkService {
 
   Future<http.Response> uploadFiles(String endpoint, List<File> files) async {
     try {
-      var request = http.MultipartRequest('POST', Uri.parse('$baseUrl$endpoint'));
+      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl$endpoint'));
       
       // Add necessary headers
       request.headers.addAll({
