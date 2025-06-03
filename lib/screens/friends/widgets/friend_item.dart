@@ -11,12 +11,14 @@ class FriendItem extends StatelessWidget {
   final String userName;
   final String userEmail;
   final String avatarUrl;
+  final bool isFriend;
 
   const FriendItem({
     super.key,
     required this.userName,
     required this.userEmail,
     required this.avatarUrl,
+    this.isFriend = false,
   });
 
   @override
@@ -63,11 +65,17 @@ class FriendItem extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-                SvgPicture.asset(
-                  AppIcons.addUser,
-                  width: 24.w,
-                  height: 24.h,
-                ),
+              isFriend
+                  ? Icon(
+                      Icons.close,
+                      color: AppColors.error,
+                      size: 24.sp,
+                    )
+                  : SvgPicture.asset(
+                      AppIcons.addUser,
+                      width: 24.w,
+                      height: 24.h,
+                    ),
             ],
           ),
         ],

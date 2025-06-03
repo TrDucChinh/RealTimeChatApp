@@ -17,6 +17,8 @@ class LoadUsers extends AddFriendEvent {
 
 class LoadFriendRequests extends AddFriendEvent {}
 
+class LoadFriends extends AddFriendEvent {}
+
 class AcceptFriendRequest extends AddFriendEvent {
   final String requestId;
   AcceptFriendRequest(this.requestId);
@@ -37,6 +39,7 @@ class AddFriendLoading extends AddFriendState {}
 class AddFriendLoaded extends AddFriendState {
   final List<UserModel> users;
   final List<FriendRequest> friendRequests;
+  final List<UserModel> friends;
   final int totalPages;
   final int currentPage;
   AddFriendLoaded(
@@ -44,6 +47,7 @@ class AddFriendLoaded extends AddFriendState {
     required this.totalPages,
     required this.currentPage,
     this.friendRequests = const [],
+    this.friends = const [],
   });
 }
 
@@ -93,6 +97,7 @@ class AddFriendBloc extends Bloc<AddFriendEvent, AddFriendState> {
         super(AddFriendInitial()) {
     on<LoadUsers>(_onLoadUsers);
     on<LoadFriendRequests>(_onLoadFriendRequests);
+    on<LoadFriends>(_onLoadFriends);
     on<AcceptFriendRequest>(_onAcceptFriendRequest);
     on<RejectFriendRequest>(_onRejectFriendRequest);
   }
@@ -163,6 +168,7 @@ class AddFriendBloc extends Bloc<AddFriendEvent, AddFriendState> {
             totalPages: currentState.totalPages,
             currentPage: currentState.currentPage,
             friendRequests: requests,
+            friends: currentState.friends,
           ));
         } else {
           print('Current state is not AddFriendLoaded: ${state.runtimeType}');
@@ -192,6 +198,7 @@ class AddFriendBloc extends Bloc<AddFriendEvent, AddFriendState> {
       if (response.statusCode == 200) {
         add(LoadFriendRequests());
         add(LoadUsers());
+        add(LoadFriends());
       }
     } catch (e) {
       print('Error accepting friend request: $e');
@@ -215,9 +222,62 @@ class AddFriendBloc extends Bloc<AddFriendEvent, AddFriendState> {
       
       if (response.statusCode == 200) {
         add(LoadFriendRequests());
+        add(LoadFriends());
       }
     } catch (e) {
       print('Error rejecting friend request: $e');
+    }
+  }
+
+  Future<void> _onLoadFriends(
+    LoadFriends event,
+    Emitter<AddFriendState> emit,
+  ) async {
+    try {
+      // First get the list of friend IDs
+      final response = await _networkService.get('/users/friends');
+      if (response.statusCode == 200) {
+        final List<dynamic> friendsData = json.decode(response.body);
+        _friendIds = friendsData
+            .map((friend) {
+              if (friend is Map<String, dynamic> && friend.containsKey('_id')) {
+                return friend['_id'] as String;
+              }
+              return '';
+            })
+            .where((id) => id.isNotEmpty)
+            .toList();
+
+        // Then get the details of each friend
+        final List<UserModel> friends = [];
+        for (final friendId in _friendIds) {
+          final friendResponse = await _networkService.get('/users/$friendId');
+          if (friendResponse.statusCode == 200) {
+            final friendData = json.decode(friendResponse.body);
+            friends.add(UserModel.fromJson(friendData));
+          }
+        }
+
+        if (state is AddFriendLoaded) {
+          final currentState = state as AddFriendLoaded;
+          emit(AddFriendLoaded(
+            currentState.users,
+            totalPages: currentState.totalPages,
+            currentPage: currentState.currentPage,
+            friendRequests: currentState.friendRequests,
+            friends: friends,
+          ));
+        } else {
+          emit(AddFriendLoaded(
+            [],
+            totalPages: 1,
+            currentPage: 1,
+            friends: friends,
+          ));
+        }
+      }
+    } catch (e) {
+      print('Error loading friends: $e');
     }
   }
 
@@ -271,6 +331,8 @@ class AddFriendBloc extends Bloc<AddFriendEvent, AddFriendState> {
                 users,
                 totalPages: pagination['totalPages'] as int,
                 currentPage: pagination['page'] as int,
+                friendRequests: [],
+                friends: [],
               ),
             );
             print('Loading friend requests after initial users load');
@@ -285,6 +347,7 @@ class AddFriendBloc extends Bloc<AddFriendEvent, AddFriendState> {
                 totalPages: pagination['totalPages'] as int,
                 currentPage: pagination['page'] as int,
                 friendRequests: currentState.friendRequests,
+                friends: currentState.friends,
               ),
             );
           }

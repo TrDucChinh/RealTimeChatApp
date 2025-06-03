@@ -17,4 +17,5 @@ class AppIcons {
   static const String dotMenu = '${basePath}dot_menu_icon$format';
   static const String videoCam = '${basePath}video_cam_icon$format';
   static const String phone = '${basePath}phone_icon$format';
+  static const String check = '${basePath}check_icon$format';
 }

@@ -38,5 +38,9 @@
   "register_title": "Enter your email",
   "sign_up": "Sign Up",
   "friend_requests": "Friend Requests",
-  "suggested_friends": "Suggested Friends"
+  "suggested_friends": "Suggested Friends",
+  "my_friends": "My Friends",
+  "no_users_found": "No users found",
+  "no_friends_found": "No friends found",
+  "friends": "Friends"
 }

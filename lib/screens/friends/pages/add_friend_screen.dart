@@ -34,6 +34,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
     final bloc = context.read<AddFriendBloc>();
     bloc.add(LoadUsers());
     bloc.add(LoadFriendRequests());
+    bloc.add(LoadFriends());
     _scrollController.addListener(_onScroll);
   }
 
@@ -188,9 +189,11 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                         // Friend Requests Section
                         if (state.friendRequests.isNotEmpty) ...[
                           Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 24.w, vertical: 16.h),
                             child: Text(
-                              AppLocalizations.of(context).translate('friend_requests'),
+                              AppLocalizations.of(context)
+                                  .translate('friend_requests'),
                               style: AppTextStyles.semiBold_18px.copyWith(
                                 color: AppColors.neutral_900,
                               ),
@@ -201,7 +204,8 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                             physics: const NeverScrollableScrollPhysics(),
                             padding: EdgeInsets.symmetric(horizontal: 24.w),
                             itemCount: state.friendRequests.length,
-                            separatorBuilder: (context, index) => SizedBox(height: 16.h),
+                            separatorBuilder: (context, index) =>
+                                SizedBox(height: 16.h),
                             itemBuilder: (context, index) {
                               final request = state.friendRequests[index];
                               return Container(
@@ -211,7 +215,8 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                                   borderRadius: BorderRadius.circular(12.r),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppColors.neutral_200.withOpacity(0.5),
+                                      color: AppColors.neutral_200
+                                          .withOpacity(0.5),
                                       blurRadius: 4,
                                       offset: const Offset(0, 2),
                                     ),
@@ -221,23 +226,27 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                                   children: [
                                     CircleAvatar(
                                       radius: 24.r,
-                                      backgroundImage: NetworkImage(request.sender.avatarUrl),
+                                      backgroundImage: NetworkImage(
+                                          request.sender.avatarUrl),
                                     ),
                                     SizedBox(width: 12.w),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             request.sender.username,
-                                            style: AppTextStyles.medium_16px.copyWith(
+                                            style: AppTextStyles.medium_16px
+                                                .copyWith(
                                               color: AppColors.neutral_900,
                                             ),
                                           ),
                                           SizedBox(height: 4.h),
                                           Text(
                                             request.sender.email,
-                                            style: AppTextStyles.regular_14px.copyWith(
+                                            style: AppTextStyles.regular_14px
+                                                .copyWith(
                                               color: AppColors.neutral_500,
                                             ),
                                           ),
@@ -249,13 +258,15 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                                         IconButton(
                                           onPressed: () {
                                             context.read<AddFriendBloc>().add(
-                                                  RejectFriendRequest(request.id),
+                                                  RejectFriendRequest(
+                                                      request.id),
                                                 );
                                           },
                                           icon: Container(
                                             padding: EdgeInsets.all(8.r),
                                             decoration: BoxDecoration(
-                                              color: AppColors.error.withOpacity(0.1),
+                                              color: AppColors.error
+                                                  .withOpacity(0.1),
                                               shape: BoxShape.circle,
                                             ),
                                             child: Icon(
@@ -269,13 +280,15 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                                         IconButton(
                                           onPressed: () {
                                             context.read<AddFriendBloc>().add(
-                                                  AcceptFriendRequest(request.id),
+                                                  AcceptFriendRequest(
+                                                      request.id),
                                                 );
                                           },
                                           icon: Container(
                                             padding: EdgeInsets.all(8.r),
                                             decoration: BoxDecoration(
-                                              color: AppColors.success.withOpacity(0.1),
+                                              color: AppColors.success
+                                                  .withOpacity(0.1),
                                               shape: BoxShape.circle,
                                             ),
                                             child: Icon(
@@ -295,11 +308,98 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                           SizedBox(height: 24.h),
                         ],
 
+                        // Friends List Section
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 24.w, vertical: 16.h),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                AppLocalizations.of(context)
+                                    .translate('my_friends'),
+                                style: AppTextStyles.semiBold_18px.copyWith(
+                                  color: AppColors.neutral_900,
+                                ),
+                              ),
+                              Text(
+                                '${state.friends.length} ${AppLocalizations.of(context).translate('friends')}',
+                                style: AppTextStyles.regular_14px.copyWith(
+                                  color: AppColors.neutral_500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (state is AddFriendLoading && state.friends.isEmpty)
+                          const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: CircularProgressIndicator(),
+                            ),
+                          )
+                        else if (state.friends.isEmpty)
+                          Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image.asset(
+                                  AppImages.cardSearch,
+                                  width: 200.w,
+                                  height: 200.h,
+                                ),
+                                SizedBox(height: 16.h),
+                                Text(
+                                  AppLocalizations.of(context)
+                                      .translate('no_friends_found'),
+                                  style: AppTextStyles.medium_18px.copyWith(
+                                    color: AppColors.neutral_500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            padding: EdgeInsets.symmetric(horizontal: 24.w),
+                            itemCount: state.friends.length,
+                            separatorBuilder: (context, index) =>
+                                SizedBox(height: 16.h),
+                            itemBuilder: (context, index) {
+                              return Container(
+                                padding: EdgeInsets.all(16.r),
+                                decoration: BoxDecoration(
+                                  color: AppColors.white,
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.neutral_200
+                                          .withOpacity(0.5),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: FriendItem(
+                                  avatarUrl: state.friends[index].avatarUrl,
+                                  userName: state.friends[index].username,
+                                  userEmail: state.friends[index].email,
+                                  isFriend: true,
+                                ),
+                              );
+                            },
+                          ),
+                        SizedBox(height: 24.h),
+
                         // Users List Section
                         Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 24.w, vertical: 16.h),
                           child: Text(
-                            AppLocalizations.of(context).translate('suggested_friends'),
+                            AppLocalizations.of(context)
+                                .translate('suggested_friends'),
                             style: AppTextStyles.semiBold_18px.copyWith(
                               color: AppColors.neutral_900,
                             ),
@@ -317,7 +417,8 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                                 ),
                                 SizedBox(height: 16.h),
                                 Text(
-                                  AppLocalizations.of(context).translate('no_users_found'),
+                                  AppLocalizations.of(context)
+                                      .translate('no_users_found'),
                                   style: AppTextStyles.medium_18px.copyWith(
                                     color: AppColors.neutral_500,
                                   ),
@@ -331,8 +432,12 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                             physics: const NeverScrollableScrollPhysics(),
                             padding: EdgeInsets.symmetric(horizontal: 24.w),
                             itemCount: state.users.length +
-                                (_isLoadingMore && state.currentPage < state.totalPages ? 1 : 0),
-                            separatorBuilder: (context, index) => SizedBox(height: 16.h),
+                                (_isLoadingMore &&
+                                        state.currentPage < state.totalPages
+                                    ? 1
+                                    : 0),
+                            separatorBuilder: (context, index) =>
+                                SizedBox(height: 16.h),
                             itemBuilder: (context, index) {
                               if (index == state.users.length) {
                                 return const Center(
@@ -342,10 +447,27 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                                   ),
                                 );
                               }
-                              return FriendItem(
-                                avatarUrl: state.users[index].avatarUrl,
-                                userName: state.users[index].username,
-                                userEmail: state.users[index].email,
+
+                              return Container(
+                                padding: EdgeInsets.all(16.r),
+                                decoration: BoxDecoration(
+                                  color: AppColors.white,
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.neutral_200
+                                          .withOpacity(0.5),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: FriendItem(
+                                  avatarUrl: state.users[index].avatarUrl,
+                                  userName: state.users[index].username,
+                                  userEmail: state.users[index].email,
+                                  isFriend: false,
+                                ),
                               );
                             },
                           ),

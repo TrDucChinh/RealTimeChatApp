@@ -38,5 +38,9 @@
   "register_title": "Nhập email của bạn",
   "sign_up": "Đăng Ký",
   "friend_requests": "Yêu Cầu Kết Bạn",
-  "suggested_friends": "Đề Xuất Bạn Bè"
+  "suggested_friends": "Đề Xuất Bạn Bè",
+  "my_friends": "Bạn Bè Của Tôi",
+  "no_users_found": "Không tìm thấy người dùng",
+  "no_friends_found": "Không tìm thấy bạn bè",
+  "friends": "Bạn Bè"
 }
