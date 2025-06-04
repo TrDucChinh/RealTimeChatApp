@@ -184,6 +184,23 @@ class AddFriendBloc extends Bloc<AddFriendEvent, AddFriendState> {
       print('Accept response body: ${response.body}');
       
       if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        final String senderId = responseData['sender'];
+
+        final conversationResponse = await _networkService.post(
+          '/conversations',
+          body: {
+            'participants': [_currentUserId, senderId],
+            'type': 'group',
+          },
+        );
+
+        if (conversationResponse.statusCode == 201) {
+          print('Conversation created successfully');
+        } else {
+          print('Failed to create conversation: ${conversationResponse.body}');
+        }
+
         if (state is AddFriendLoaded) {
           final currentState = state as AddFriendLoaded;
           emit(AddFriendLoaded(

@@ -55,9 +55,11 @@ class ConversationItem extends StatelessWidget {
                 RichText(
                   text: TextSpan(
                     children: EmojiHelper.buildTextSpans(
-                      lastMessage?.messageType == 'text' 
-                          ? (lastMessage?.text ?? 'No messages yet')
-                          : 'A media message',
+                      lastMessage == null || lastMessage.text.isEmpty == true
+                          ? 'No messages yet'
+                          : (lastMessage.messageType == 'text'
+                              ? lastMessage.text
+                              : 'A media message'),
                       AppColors.neutral_300,
                       fontSize: 12.sp,
                     ),
@@ -75,7 +77,7 @@ class ConversationItem extends StatelessWidget {
             children: [
               if (lastMessage != null)
                 Text(
-                 Helper.formatTime(lastMessage.createdAt),
+                  Helper.formatTime(lastMessage.createdAt),
                   style: AppTextStyles.bold_12px.copyWith(
                     color: AppColors.neutral_500,
                   ),
@@ -108,5 +110,4 @@ class ConversationItem extends StatelessWidget {
       ),
     );
   }
-
 }
