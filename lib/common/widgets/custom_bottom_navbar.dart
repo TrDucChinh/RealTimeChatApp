@@ -8,7 +8,12 @@ import '../../cubits/bottom_nav_cubit.dart';
 import 'nav_item.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
-  const CustomBottomNavBar({super.key});
+  final String token;
+  
+  const CustomBottomNavBar({
+    super.key,
+    required this.token,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +41,7 @@ class CustomBottomNavBar extends StatelessWidget {
               GestureDetector(
                 onTap: () {
                   context.read<BottomNavCubit>().updateIndex(0);
-                  context.goNamed('chats');
+                  context.goNamed('chats', extra: token);
                 },
                 child: NavItem(
                   selectedIndex: selectedIndex,
@@ -49,7 +54,7 @@ class CustomBottomNavBar extends StatelessWidget {
               GestureDetector(
                 onTap: () {
                   context.read<BottomNavCubit>().updateIndex(1);
-                  context.goNamed('groups');
+                  context.goNamed('groups', extra: token);
                 },
                 child: NavItem(
                   selectedIndex: selectedIndex,
@@ -59,11 +64,10 @@ class CustomBottomNavBar extends StatelessWidget {
                   selectedIcon: AppIcons.groupFilled,
                 ),
               ),
-
               GestureDetector(
                 onTap: () {
                   context.read<BottomNavCubit>().updateIndex(2);
-                  context.goNamed('profile');
+                  context.goNamed('profile', extra: token);
                 },
                 child: NavItem(
                   selectedIndex: selectedIndex,
@@ -73,11 +77,10 @@ class CustomBottomNavBar extends StatelessWidget {
                   selectedIcon: AppIcons.profileFilled,
                 ),
               ),
-
               GestureDetector(
                 onTap: () {
                   context.read<BottomNavCubit>().updateIndex(3);
-                  context.goNamed('menu');
+                  context.goNamed('menu', extra: token);
                 },
                 child: NavItem(
                   selectedIndex: selectedIndex,

@@ -22,6 +22,7 @@ import '../../services/storage_service.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
+    initialLocation: '/',
     routes: [
       GoRoute(
         path: '/',
@@ -36,10 +37,15 @@ class AppRouter {
                   state.matchedLocation.startsWith('/groups') ||
                   state.matchedLocation.startsWith('/profile') ||
                   state.matchedLocation.startsWith('/menu');
+
+          // Get token from state
+          final token = state.extra as String?;
+          
           return Scaffold(
             body: child,
-            bottomNavigationBar:
-                shouldShowBottomNav ? const CustomBottomNavBar() : null,
+            bottomNavigationBar: shouldShowBottomNav 
+              ? CustomBottomNavBar(token: token ?? '') 
+              : null,
           );
         },
         routes: [
@@ -117,29 +123,71 @@ class AppRouter {
           GoRoute(
             path: '/groups',
             name: 'groups',
-            builder: (context, state) => Scaffold(
-              body: Center(
-                child: Text('Groups Page'),
-              ),
-            ),
+            builder: (context, state) {
+              final token = state.extra as String?;
+              if (token == null || token.isEmpty) {
+                return BlocProvider(
+                  create: (context) => AuthBloc(
+                    NetworkService(
+                      baseUrl: baseUrl2,
+                      token: '',
+                    ),
+                  ),
+                  child: const LoginScreen(),
+                );
+              }
+              return Scaffold(
+                body: Center(
+                  child: Text('Groups Page'),
+                ),
+              );
+            },
           ),
           GoRoute(
             path: '/profile',
             name: 'profile',
-            builder: (context, state) => Scaffold(
-              body: Center(
-                child: Text('Profile Page'),
-              ),
-            ),
+            builder: (context, state) {
+              final token = state.extra as String?;
+              if (token == null || token.isEmpty) {
+                return BlocProvider(
+                  create: (context) => AuthBloc(
+                    NetworkService(
+                      baseUrl: baseUrl2,
+                      token: '',
+                    ),
+                  ),
+                  child: const LoginScreen(),
+                );
+              }
+              return Scaffold(
+                body: Center(
+                  child: Text('Profile Page'),
+                ),
+              );
+            },
           ),
           GoRoute(
             path: '/menu',
             name: 'menu',
-            builder: (context, state) => Scaffold(
-              body: Center(
-                child: Text('Menu Page'),
-              ),
-            ),
+            builder: (context, state) {
+              final token = state.extra as String?;
+              if (token == null || token.isEmpty) {
+                return BlocProvider(
+                  create: (context) => AuthBloc(
+                    NetworkService(
+                      baseUrl: baseUrl2,
+                      token: '',
+                    ),
+                  ),
+                  child: const LoginScreen(),
+                );
+              }
+              return Scaffold(
+                body: Center(
+                  child: Text('Menu Page'),
+                ),
+              );
+            },
           ),
         ],
       ),

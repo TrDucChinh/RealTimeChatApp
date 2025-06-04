@@ -204,4 +204,16 @@ class NetworkService {
       rethrow;
     }
   }
+
+  Future<bool> verifyToken() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/auth/verify'),
+        headers: _headers,
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
 }
