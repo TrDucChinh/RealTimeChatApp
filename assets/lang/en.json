@@ -42,5 +42,10 @@
   "my_friends": "My Friends",
   "no_users_found": "No users found",
   "no_friends_found": "No friends found",
-  "friends": "Friends"
+  "friends": "Friends",
+  "name_group": "Name Group",
+  "enter_name_group":"Enter Name Group",
+  "member": "Members",
+  "add_members_to_group": "Add members to group",
+  "add": "Add"
 }

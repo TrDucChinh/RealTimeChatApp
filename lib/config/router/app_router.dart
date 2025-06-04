@@ -1,9 +1,10 @@
-import 'package:chat_app_ttcs/screens/auth/bloc/register_bloc.dart';
 import 'package:chat_app_ttcs/screens/auth/pages/confirm_reset.dart';
 import 'package:chat_app_ttcs/screens/auth/pages/forgot_password_screen.dart';
 import 'package:chat_app_ttcs/screens/auth/pages/register_screen.dart';
 import 'package:chat_app_ttcs/screens/auth/pages/user_info.dart';
 import 'package:chat_app_ttcs/screens/chats/pages/chat_screen.dart';
+import 'package:chat_app_ttcs/screens/create_group/page/create_group_screen.dart';
+import 'package:chat_app_ttcs/screens/create_group/page/add_member_screen.dart';
 import 'package:chat_app_ttcs/screens/friends/pages/add_friend_screen.dart';
 import 'package:chat_app_ttcs/screens/splash/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -16,8 +17,7 @@ import '../../screens/chats_conversation/pages/chat_conversation_screen.dart';
 import '../../screens/auth/bloc/auth_bloc.dart';
 import '../../services/network_service.dart';
 import '../../screens/friends/bloc/add_friend_bloc.dart';
-import '../../screens/chats/bloc/chat_bloc.dart';
-import '../../screens/chats/bloc/chat_event.dart';
+import '../../screens/create_group/bloc/create_group_bloc.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -174,6 +174,27 @@ class AppRouter {
             conversationId: chatId,
             conversation: params.conversation,
             token: params.token,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/create_group',
+        name: 'createGroup',
+        builder: (context, state) {
+          return CreateGroupScreen();
+        },
+      ),
+      GoRoute(
+        path: '/add_members',
+        name: 'addMembers',
+        builder: (context, state) {
+          final params = state.extra as Map<String, dynamic>;
+          return BlocProvider(
+            create: (context) => CreateGroupBloc(token: params['token']),
+            child: AddMembersScreen(
+              selectedMembers: params['selectedMembers'],
+              onMembersSelected: params['onMembersSelected'],
+            ),
           );
         },
       ),

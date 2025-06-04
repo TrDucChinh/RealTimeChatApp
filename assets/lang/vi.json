@@ -42,5 +42,11 @@
   "my_friends": "Bạn Bè Của Tôi",
   "no_users_found": "Không tìm thấy người dùng",
   "no_friends_found": "Không tìm thấy bạn bè",
-  "friends": "Bạn Bè"
+  "friends": "Bạn Bè",
+  "name_group": "Tên Nhóm",
+  "enter_name_group":"Nhập Tên Nhóm",
+  "member": "Thành Viên",
+  "add_members_to_group": "Thêm thành viên vào nhóm",
+  "add": "Thêm"
+
 }

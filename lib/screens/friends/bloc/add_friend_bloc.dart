@@ -349,7 +349,7 @@ class AddFriendBloc extends Bloc<AddFriendEvent, AddFriendState> {
       
       String endpoint;
       if (event.searchQuery != null && event.searchQuery!.isNotEmpty) {
-        endpoint = '/users/search?query=${event.searchQuery}&page=$page&limit=$limit';
+        endpoint = '/users?search=${event.searchQuery}&page=$page&limit=$limit';
       } else {
         endpoint = '/users?page=$page&limit=$limit';
       }

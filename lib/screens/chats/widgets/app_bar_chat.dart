@@ -135,7 +135,7 @@ class _ChatAppBarState extends State<ChatAppBar> {
                     if (value == 'add_friend') {
                       context.pushNamed('addFriend', extra: widget.token);
                     } else if (value == 'create_group') {
-                      // Navigate to create group screen
+                      context.pushNamed('createGroup');
                     }
                   },
                 ),
