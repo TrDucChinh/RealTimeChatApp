@@ -13,6 +13,7 @@ class MessageContent extends StatelessWidget {
   final bool isSender;
   final String? selectedReaction;
   final VoidCallback onLongPress;
+  final Widget? videoPlayer;
 
   const MessageContent({
     super.key,
@@ -20,6 +21,7 @@ class MessageContent extends StatelessWidget {
     required this.isSender,
     this.selectedReaction,
     required this.onLongPress,
+    this.videoPlayer,
   });
 
   @override
@@ -50,7 +52,7 @@ class MessageContent extends StatelessWidget {
               children: [
                 if (message.messageType == 'video' &&
                     message.attachments.isNotEmpty)
-                  VideoThumbnail(
+                  videoPlayer ?? VideoThumbnail(
                     videoUrl: message.attachments.first,
                   ),
                 if (message.messageType == 'image' &&

@@ -30,7 +30,10 @@ class _MessageItemState extends State<MessageItem> {
   VideoPlayerController? _videoController;
   bool _isVideoInitialized = false;
   bool _isVideoError = false;
+  bool _isVideoLoading = false;
   String? _selectedReaction;
+  bool _isPlaying = false;
+  bool _isVideoEnded = false;
 
   final List<String> _reactions = ['❤️', '👍', '😂', '😮', '😢', '🙏'];
 
@@ -49,6 +52,10 @@ class _MessageItemState extends State<MessageItem> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.message.id != widget.message.id) {
       _updateSelectedReaction();
+      if (widget.message.messageType == 'video' &&
+          widget.message.attachments.isNotEmpty) {
+        _initializeVideo();
+      }
     }
   }
 
@@ -65,8 +72,21 @@ class _MessageItemState extends State<MessageItem> {
   }
 
   Future<void> _initializeVideo() async {
+    if (_videoController != null) {
+      await _videoController!.dispose();
+    }
+
+    setState(() {
+      _isVideoLoading = true;
+      _isVideoError = false;
+      _isVideoInitialized = false;
+      _isVideoEnded = false;
+    });
+
     try {
       final videoUrl = widget.message.attachments.first;
+      print('Initializing video with URL: $videoUrl');
+      
       if (videoUrl.startsWith('/')) {
         _videoController = VideoPlayerController.file(File(videoUrl));
       } else {
@@ -77,7 +97,6 @@ class _MessageItemState extends State<MessageItem> {
             'Accept': '*/*',
             'Connection': 'keep-alive',
           },
-          formatHint: VideoFormat.hls,
         );
       }
 
@@ -88,25 +107,73 @@ class _MessageItemState extends State<MessageItem> {
         },
       );
 
+      // Add listener for video completion
+      _videoController?.addListener(_videoListener);
+
       if (mounted) {
         setState(() {
           _isVideoInitialized = true;
           _isVideoError = false;
+          _isVideoLoading = false;
         });
       }
     } catch (e) {
+      print('Error initializing video: $e');
       if (mounted) {
         setState(() {
           _isVideoError = true;
+          _isVideoLoading = false;
         });
       }
     }
   }
 
+  void _videoListener() {
+    if (_videoController != null) {
+      // Check if video has ended
+      if (_videoController!.value.position >= _videoController!.value.duration) {
+        setState(() {
+          _isVideoEnded = true;
+          _isPlaying = false;
+        });
+      }
+    }
+  }
+
+  void _replayVideo() {
+    if (_videoController != null) {
+      _videoController!.seekTo(Duration.zero);
+      _videoController!.play();
+      setState(() {
+        _isVideoEnded = false;
+        _isPlaying = true;
+      });
+    }
+  }
+
   @override
   void dispose() {
+    _videoController?.removeListener(_videoListener);
     _videoController?.dispose();
     super.dispose();
+  }
+
+  void _togglePlayPause() {
+    if (_videoController != null) {
+      if (_isVideoEnded) {
+        _replayVideo();
+      } else {
+        setState(() {
+          if (_videoController!.value.isPlaying) {
+            _videoController!.pause();
+            _isPlaying = false;
+          } else {
+            _videoController!.play();
+            _isPlaying = true;
+          }
+        });
+      }
+    }
   }
 
   void _handleReaction(String reaction) {
@@ -117,10 +184,122 @@ class _MessageItemState extends State<MessageItem> {
         _selectedReaction = reaction;
       }
     });
-    print('Selected reaction: $_selectedReaction');
     context.read<ChatConversationBloc>().add(
           AddReaction(widget.message.id, _selectedReaction ?? ''),
         );
+  }
+
+  Widget _buildVideoPlayer() {
+    if (_isVideoLoading) {
+      return Container(
+        width: 240.w,
+        height: 180.h,
+        color: Colors.black,
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: Colors.white,
+          ),
+        ),
+      );
+    }
+
+    if (_isVideoError) {
+      return Container(
+        width: 240.w,
+        height: 180.h,
+        color: Colors.black,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              color: Colors.white,
+              size: 48.w,
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'Failed to load video',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14.sp,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (!_isVideoInitialized || _videoController == null) {
+      return Container(
+        width: 240.w,
+        height: 180.h,
+        color: Colors.black,
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: Colors.white,
+          ),
+        ),
+      );
+    }
+
+    return AspectRatio(
+      aspectRatio: _videoController!.value.aspectRatio,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          VideoPlayer(_videoController!),
+          GestureDetector(
+            onTap: _togglePlayPause,
+            child: Container(
+              color: Colors.transparent,
+              child: Center(
+                child: AnimatedOpacity(
+                  opacity: _isPlaying ? 0.0 : 0.8,
+                  duration: const Duration(milliseconds: 300),
+                  child: Container(
+                    padding: EdgeInsets.all(8.w),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      _isVideoEnded ? Icons.replay : (_isPlaying ? Icons.pause : Icons.play_arrow),
+                      size: 32.w,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: ValueListenableBuilder(
+              valueListenable: _videoController!,
+              builder: (context, VideoPlayerValue value, child) {
+                return Container(
+                  height: 4.h,
+                  color: Colors.black.withOpacity(0.5),
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: value.position.inMilliseconds /
+                        (value.duration.inMilliseconds == 0
+                            ? 1
+                            : value.duration.inMilliseconds),
+                    child: Container(
+                      color: Colors.white,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -147,6 +326,10 @@ class _MessageItemState extends State<MessageItem> {
                   isSender: widget.isSender,
                   selectedReaction: _selectedReaction,
                   onLongPress: () => _showReactionMenu(context),
+                  videoPlayer: widget.message.messageType == 'video' &&
+                          widget.message.attachments.isNotEmpty
+                      ? _buildVideoPlayer()
+                      : null,
                 ),
                 SizedBox(height: _selectedReaction != null ? 16.h : 4.h),
                 MessageTime(time: widget.message.createdAt),
