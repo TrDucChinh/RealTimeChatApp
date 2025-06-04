@@ -5,6 +5,7 @@ import 'package:chat_app_ttcs/screens/auth/pages/register_screen.dart';
 import 'package:chat_app_ttcs/screens/auth/pages/user_info.dart';
 import 'package:chat_app_ttcs/screens/chats/pages/chat_screen.dart';
 import 'package:chat_app_ttcs/screens/friends/pages/add_friend_screen.dart';
+import 'package:chat_app_ttcs/screens/splash/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,11 +16,17 @@ import '../../screens/chats_conversation/pages/chat_conversation_screen.dart';
 import '../../screens/auth/bloc/auth_bloc.dart';
 import '../../services/network_service.dart';
 import '../../screens/friends/bloc/add_friend_bloc.dart';
+import '../../screens/chats/bloc/chat_bloc.dart';
+import '../../screens/chats/bloc/chat_event.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/login',
     routes: [
+      GoRoute(
+        path: '/',
+        name: 'splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       ShellRoute(
         builder: (context, state, child) {
           // Check if the current route should show bottom navigation

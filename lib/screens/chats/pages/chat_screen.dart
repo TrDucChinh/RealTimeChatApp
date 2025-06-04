@@ -33,6 +33,20 @@ class _ChatsScreenState extends State<ChatsScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    print('ChatsScreen didChangeDependencies called');
+    _chatBloc.add(LoadConversations());
+  }
+
+  @override
+  void didUpdateWidget(ChatsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    print('ChatsScreen didUpdateWidget called');
+    _chatBloc.add(LoadConversations());
+  }
+
+  @override
   void dispose() {
     _chatBloc.close();
     super.dispose();
@@ -45,6 +59,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
       child: PopScope(
         onPopInvoked: (didPop) {
           if (didPop) {
+            print('ChatsScreen PopScope onPopInvoked');
             _chatBloc.add(LoadConversations());
           }
         },
@@ -80,6 +95,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
               }
 
               if (state is ChatLoaded) {
+                print('ChatsScreen loaded with ${state.conversations.length} conversations');
                 return ListView.separated(
                   padding: const EdgeInsets.only(top: 100),
                   itemCount: state.conversations.length,
@@ -97,7 +113,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
                             token: widget.token,
                           ),
                         );
-                        // Refresh conversations after returning from chat conversation
+                        print('Returning from chat conversation');
                         _chatBloc.add(LoadConversations());
                       },
                       child: ConversationItem(
