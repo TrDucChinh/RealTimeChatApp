@@ -55,11 +55,15 @@ class ConversationItem extends StatelessWidget {
                 RichText(
                   text: TextSpan(
                     children: EmojiHelper.buildTextSpans(
-                      lastMessage == null || lastMessage.text.isEmpty == true
-                          ? 'No messages yet'
+                      lastMessage == null
+                          ? (lastMessage?.messageType == 'image'
+                              ? 'A media message'
+                              : 'No messages yet')
                           : (lastMessage.messageType == 'text'
                               ? lastMessage.text
-                              : 'A media message'),
+                              : lastMessage.text.isNotEmpty
+                                  ? lastMessage.text
+                                  : 'A media message'),
                       AppColors.neutral_300,
                       fontSize: 12.sp,
                     ),

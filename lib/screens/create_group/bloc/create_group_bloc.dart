@@ -14,6 +14,12 @@ class LoadUsers extends CreateGroupEvent {
   LoadUsers({this.searchQuery, this.page, this.limit});
 }
 
+class CreateGroup extends CreateGroupEvent {
+  final String name;
+  final List<UserModel> members;
+  CreateGroup({required this.name, required this.members});
+}
+
 // States
 abstract class CreateGroupState {}
 
@@ -40,6 +46,17 @@ class CreateGroupError extends CreateGroupState {
   CreateGroupError(this.message);
 }
 
+class CreateGroupSuccess extends CreateGroupState {
+  final String groupId;
+  final String name;
+  final List<UserModel> members;
+  CreateGroupSuccess({
+    required this.groupId,
+    required this.name,
+    required this.members,
+  });
+}
+
 // Bloc
 class CreateGroupBloc extends Bloc<CreateGroupEvent, CreateGroupState> {
   final NetworkService _networkService;
@@ -53,6 +70,7 @@ class CreateGroupBloc extends Bloc<CreateGroupEvent, CreateGroupState> {
         ),
         super(CreateGroupInitial()) {
     on<LoadUsers>(_onLoadUsers);
+    on<CreateGroup>(_onCreateGroup);
   }
 
   Future<void> _onLoadUsers(
@@ -71,7 +89,7 @@ class CreateGroupBloc extends Bloc<CreateGroupEvent, CreateGroupState> {
       
       String endpoint;
       if (event.searchQuery != null && event.searchQuery!.isNotEmpty) {
-        endpoint = '/users/search?query=${event.searchQuery}&page=$page&limit=$limit';
+        endpoint = '/users?search?query=${event.searchQuery}&page=$page&limit=$limit';
       } else {
         endpoint = '/users?page=$page&limit=$limit';
       }
@@ -126,6 +144,49 @@ class CreateGroupBloc extends Bloc<CreateGroupEvent, CreateGroupState> {
       }
     } catch (e) {
       print('Error in _onLoadUsers: $e');
+      emit(CreateGroupError(e.toString()));
+    }
+  }
+
+  Future<void> _onCreateGroup(
+    CreateGroup event,
+    Emitter<CreateGroupState> emit,
+  ) async {
+    try {
+      emit(CreateGroupLoading());
+      final response = await _networkService.post(
+        '/conversations',
+        body: {
+          'name': event.name,
+          'participants': event.members.map((e) => e.id).toList(),
+          'type': 'group',
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = json.decode(response.body);
+        if (data == null) {
+          throw Exception('Invalid response data');
+        }
+
+        final groupId = data['id'] ?? data['_id'];
+        if (groupId == null) {
+          throw Exception('Group ID not found in response');
+        }
+
+        emit(CreateGroupSuccess(
+          groupId: groupId.toString(),
+          name: event.name,
+          members: event.members,
+        ));
+      } else {
+        final errorData = json.decode(response.body);
+        emit(CreateGroupError(
+          errorData['message'] ?? 'Failed to create group',
+        ));
+      }
+    } catch (e) {
+      print('Error in _onCreateGroup: $e');
       emit(CreateGroupError(e.toString()));
     }
   }

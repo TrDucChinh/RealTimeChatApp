@@ -12,6 +12,7 @@ class UserTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return Row(
       children: [
         ClipOval(

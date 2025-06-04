@@ -18,6 +18,7 @@ import '../../screens/auth/bloc/auth_bloc.dart';
 import '../../services/network_service.dart';
 import '../../screens/friends/bloc/add_friend_bloc.dart';
 import '../../screens/create_group/bloc/create_group_bloc.dart';
+import '../../services/storage_service.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -181,7 +182,22 @@ class AppRouter {
         path: '/create_group',
         name: 'createGroup',
         builder: (context, state) {
-          return CreateGroupScreen();
+          final token = state.extra as String?;
+          if (token == null || token.isEmpty) {
+            return BlocProvider(
+              create: (context) => AuthBloc(
+                NetworkService(
+                  baseUrl: baseUrl2,
+                  token: '',
+                ),
+              ),
+              child: const LoginScreen(),
+            );
+          }
+          return BlocProvider(
+            create: (context) => CreateGroupBloc(token: token),
+            child: CreateGroupScreen(),
+          );
         },
       ),
       GoRoute(
