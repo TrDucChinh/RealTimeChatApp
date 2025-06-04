@@ -2,11 +2,10 @@ import 'dart:convert';
 
 import 'package:chat_app_ttcs/screens/auth/bloc/auth_event.dart';
 import 'package:chat_app_ttcs/services/network_service.dart';
+import 'package:chat_app_ttcs/services/storage_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-
 import 'auth_state.dart';
-
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final NetworkService _networkService;
@@ -39,8 +38,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return;
       }
 
-
-      // Simulate API call
+      await StorageService.saveToken(token);
       emit(AuthSuccess(token));
     } catch (e) {
       emit(AuthError(e.toString()));
