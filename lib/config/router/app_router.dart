@@ -8,6 +8,7 @@ import 'package:chat_app_ttcs/screens/create_group/page/add_member_screen.dart';
 import 'package:chat_app_ttcs/screens/friends/pages/add_friend_screen.dart';
 import 'package:chat_app_ttcs/screens/groups/pages/groups_screen.dart';
 import 'package:chat_app_ttcs/screens/splash/pages/splash_screen.dart';
+import 'package:chat_app_ttcs/screens/profile/pages/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -155,11 +156,7 @@ class AppRouter {
                   child: const LoginScreen(),
                 );
               }
-              return Scaffold(
-                body: Center(
-                  child: Text('Profile Page'),
-                ),
-              );
+              return ProfileScreen(token: token);
             },
           ),
           GoRoute(

@@ -70,9 +70,10 @@ class NetworkService {
     }
   }
 
-  Future<http.Response> uploadFiles(String endpoint, List<File> files) async {
+  Future<http.Response> uploadFiles(String endpoint, List<File> files, {String fieldName = 'media', String method = 'POST'}) async {
     try {
-      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl$endpoint'));
+      final uri = Uri.parse('$baseUrl$endpoint');
+      final request = http.MultipartRequest(method, uri);
       
       // Add necessary headers
       request.headers.addAll({
@@ -83,24 +84,38 @@ class NetworkService {
 
       // Add files to request as form-data
       for (var i = 0; i < files.length; i++) {
-        print('Adding file ${i + 1}/${files.length} to request');
         final file = files[i];
+        print('Processing file ${i + 1}/${files.length}: ${file.path}');
+        
+        if (!await file.exists()) {
+          throw Exception('File does not exist: ${file.path}');
+        }
+
         final fileSize = await file.length();
-        print('File size before upload: $fileSize bytes');
+        print('File size: $fileSize bytes');
+        
+        if (fileSize == 0) {
+          throw Exception('File is empty: ${file.path}');
+        }
+
+        final fileExtension = file.path.split('.').last.toLowerCase();
+        final contentType = _getContentType(fileExtension);
         
         request.files.add(
           await http.MultipartFile.fromPath(
-            'media',
+            fieldName,
             file.path,
-            contentType: MediaType('image', 'jpeg'), // Add content type
+            contentType: contentType,
           ),
         );
       }
 
-      print('Sending multipart request...');
+      print('Sending multipart request to: ${request.url}');
+      print('Request headers: ${request.headers}');
+      
       // Send request with longer timeout
       final streamedResponse = await request.send().timeout(
-        Duration(seconds: 60), // Increased timeout
+        Duration(seconds: 60),
         onTimeout: () {
           throw TimeoutException('Request timed out after 60 seconds');
         },
@@ -110,6 +125,7 @@ class NetworkService {
       final response = await http.Response.fromStream(streamedResponse);
       print('Response received with status: ${response.statusCode}');
       print('Response headers: ${response.headers}');
+      print('Response body: ${response.body}');
 
       if (response.statusCode == 401) {
         throw Exception('Unauthorized: Please login again');
@@ -131,6 +147,22 @@ class NetworkService {
     } catch (e) {
       print('Error uploading files: $e');
       throw Exception('Failed to upload files: ${e.toString()}');
+    }
+  }
+
+  MediaType _getContentType(String fileExtension) {
+    switch (fileExtension) {
+      case 'jpg':
+      case 'jpeg':
+        return MediaType('image', 'jpeg');
+      case 'png':
+        return MediaType('image', 'png');
+      case 'gif':
+        return MediaType('image', 'gif');
+      case 'webp':
+        return MediaType('image', 'webp');
+      default:
+        return MediaType('application', 'octet-stream');
     }
   }
 

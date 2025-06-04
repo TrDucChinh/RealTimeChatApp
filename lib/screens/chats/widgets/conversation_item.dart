@@ -33,13 +33,41 @@ class ConversationItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          BaseCacheImage(
-            url: otherUser.avatarUrl,
-            width: 42.w,
-            height: 42.h,
-            borderRadius: BorderRadius.circular(25),
-            fit: BoxFit.cover,
-          ),
+          if (otherUser.avatarUrl.isNotEmpty && Uri.tryParse(otherUser.avatarUrl)?.hasAbsolutePath == true)
+            BaseCacheImage(
+              url: otherUser.avatarUrl,
+              width: 42.w,
+              height: 42.h,
+              borderRadius: BorderRadius.circular(25),
+              fit: BoxFit.cover,
+              errorWidget: Container(
+                width: 42.w,
+                height: 42.h,
+                decoration: BoxDecoration(
+                  color: AppColors.neutral_200,
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: Icon(
+                  Icons.person,
+                  size: 24.w,
+                  color: AppColors.neutral_400,
+                ),
+              ),
+            )
+          else
+            Container(
+              width: 42.w,
+              height: 42.h,
+              decoration: BoxDecoration(
+                color: AppColors.neutral_200,
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: Icon(
+                Icons.person,
+                size: 24.w,
+                color: AppColors.neutral_400,
+              ),
+            ),
           SizedBox(width: 16.w),
           Expanded(
             child: Column(
