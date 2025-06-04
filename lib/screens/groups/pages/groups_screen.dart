@@ -9,21 +9,21 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import '../../../config/theme/utils/app_colors.dart';
-import '../bloc/chat_state.dart';
+import '../../chats/bloc/chat_state.dart';
 
-class ChatsScreen extends StatefulWidget {
+class GroupsScreen extends StatefulWidget {
   final String token;
 
-  const ChatsScreen({
+  const GroupsScreen({
     super.key,
     required this.token,
   });
 
   @override
-  State<ChatsScreen> createState() => _ChatsScreenState();
+  State<GroupsScreen> createState() => _GroupsScreenState();
 }
 
-class _ChatsScreenState extends State<ChatsScreen> {
+class _GroupsScreenState extends State<GroupsScreen> {
   late ChatBloc _chatBloc;
 
   @override
@@ -35,14 +35,14 @@ class _ChatsScreenState extends State<ChatsScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    print('ChatsScreen didChangeDependencies called');
+    print('GroupsScreen didChangeDependencies called');
     _chatBloc.add(LoadConversations());
   }
 
   @override
-  void didUpdateWidget(ChatsScreen oldWidget) {
+  void didUpdateWidget(GroupsScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    print('ChatsScreen didUpdateWidget called');
+    print('GroupsScreen didUpdateWidget called');
     _chatBloc.add(LoadConversations());
   }
 
@@ -59,7 +59,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
       child: PopScope(
         onPopInvoked: (didPop) {
           if (didPop) {
-            print('ChatsScreen PopScope onPopInvoked');
+            print('GroupsScreen PopScope onPopInvoked');
             _chatBloc.add(LoadConversations());
           }
         },
@@ -95,18 +95,18 @@ class _ChatsScreenState extends State<ChatsScreen> {
               }
 
               if (state is ChatLoaded) {
-                // Filter only non-group conversations
-                final nonGroupConversations = state.conversations
-                    .where((conversation) => conversation.type != 'group')
+                // Filter only group conversations
+                final groupConversations = state.conversations
+                    .where((conversation) => conversation.type == 'group')
                     .toList();
                     
-                print('ChatsScreen loaded with ${nonGroupConversations.length} non-group conversations');
+                print('GroupsScreen loaded with ${groupConversations.length} group conversations');
                 return ListView.separated(
                   padding: const EdgeInsets.only(top: 100),
-                  itemCount: nonGroupConversations.length,
+                  itemCount: groupConversations.length,
                   separatorBuilder: (context, index) => SizedBox(height: 24.h),
                   itemBuilder: (context, index) {
-                    final conversation = nonGroupConversations[index];
+                    final conversation = groupConversations[index];
                     return GestureDetector(
                       onTap: () async {
                         final conversationId = conversation.id.toString();
@@ -118,7 +118,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
                             token: widget.token,
                           ),
                         );
-                        print('Returning from chat conversation');
+                        print('Returning from group conversation');
                         _chatBloc.add(LoadConversations());
                       },
                       child: ConversationItem(
@@ -137,4 +137,4 @@ class _ChatsScreenState extends State<ChatsScreen> {
       ),
     );
   }
-}
+} 

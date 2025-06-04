@@ -6,6 +6,7 @@ import 'package:chat_app_ttcs/screens/chats/pages/chat_screen.dart';
 import 'package:chat_app_ttcs/screens/create_group/page/create_group_screen.dart';
 import 'package:chat_app_ttcs/screens/create_group/page/add_member_screen.dart';
 import 'package:chat_app_ttcs/screens/friends/pages/add_friend_screen.dart';
+import 'package:chat_app_ttcs/screens/groups/pages/groups_screen.dart';
 import 'package:chat_app_ttcs/screens/splash/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -18,7 +19,6 @@ import '../../screens/auth/bloc/auth_bloc.dart';
 import '../../services/network_service.dart';
 import '../../screens/friends/bloc/add_friend_bloc.dart';
 import '../../screens/create_group/bloc/create_group_bloc.dart';
-import '../../services/storage_service.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -136,11 +136,7 @@ class AppRouter {
                   child: const LoginScreen(),
                 );
               }
-              return Scaffold(
-                body: Center(
-                  child: Text('Groups Page'),
-                ),
-              );
+              return GroupsScreen(token: token);
             },
           ),
           GoRoute(

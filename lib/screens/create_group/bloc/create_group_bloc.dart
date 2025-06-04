@@ -4,60 +4,9 @@ import 'package:chat_app_ttcs/services/network_service.dart';
 import 'package:chat_app_ttcs/sample_token.dart';
 import 'dart:convert';
 
-// Events
-abstract class CreateGroupEvent {}
+import 'create_group_event.dart';
+import 'create_group_state.dart';
 
-class LoadUsers extends CreateGroupEvent {
-  final String? searchQuery;
-  final int? page;
-  final int? limit;
-  LoadUsers({this.searchQuery, this.page, this.limit});
-}
-
-class CreateGroup extends CreateGroupEvent {
-  final String name;
-  final List<UserModel> members;
-  CreateGroup({required this.name, required this.members});
-}
-
-// States
-abstract class CreateGroupState {}
-
-class CreateGroupInitial extends CreateGroupState {}
-
-class CreateGroupLoading extends CreateGroupState {}
-
-class CreateGroupLoaded extends CreateGroupState {
-  final List<UserModel> users;
-  final int totalPages;
-  final int currentPage;
-  final String? notification;
-
-  CreateGroupLoaded({
-    required this.users,
-    required this.totalPages,
-    required this.currentPage,
-    this.notification,
-  });
-}
-
-class CreateGroupError extends CreateGroupState {
-  final String message;
-  CreateGroupError(this.message);
-}
-
-class CreateGroupSuccess extends CreateGroupState {
-  final String groupId;
-  final String name;
-  final List<UserModel> members;
-  CreateGroupSuccess({
-    required this.groupId,
-    required this.name,
-    required this.members,
-  });
-}
-
-// Bloc
 class CreateGroupBloc extends Bloc<CreateGroupEvent, CreateGroupState> {
   final NetworkService _networkService;
   int _currentPage = 1;

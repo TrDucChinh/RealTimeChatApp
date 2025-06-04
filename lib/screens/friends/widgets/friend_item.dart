@@ -8,6 +8,8 @@ import 'package:chat_app_ttcs/config/theme/utils/app_colors.dart';
 import 'package:chat_app_ttcs/config/theme/utils/text_styles.dart';
 import 'package:chat_app_ttcs/common/widgets/base_image.dart';
 
+import '../bloc/add_friend_event.dart';
+
 class FriendItem extends StatefulWidget {
   final String userName;
   final String userEmail;
